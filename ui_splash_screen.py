@@ -20,7 +20,7 @@ class Ui_SplashScreen(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.dropShadowFrame = QtWidgets.QFrame(self.centralwidget)
         self.dropShadowFrame.setStyleSheet("QFrame{\n"
-                                           "    background-color: rgb(56,58,89);\n"
+                                           "    background-color: #23272a;\n"
                                            "    border-radius: 15px;\n"
                                            "}")
         self.dropShadowFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -36,7 +36,7 @@ class Ui_SplashScreen(object):
         font.setPointSize(36)
         self.label_title.setFont(font)
         self.label_title.setStyleSheet("QLabel{\n"
-                                       "    color: rgb(0, 225, 0);\n"
+                                       "    color: #63676e;\n"
                                        "}")
         self.label_title.setAlignment(QtCore.Qt.AlignCenter)
         self.label_title.setObjectName("label_title")
@@ -56,7 +56,7 @@ class Ui_SplashScreen(object):
         self.verticalLayout.addItem(spacerItem1)
         self.progressBar = QtWidgets.QProgressBar(self.dropShadowFrame)
         self.progressBar.setStyleSheet("QProgressBar{\n"
-                                       "    color: rgb(200.200.200);\n"
+                                       "    color: #63676e;\n"
                                        "    background-color: rgb(98, 114, 164);\n"
                                        "    border-style: none;\n"
                                        "    border-radius: 10px;\n"
@@ -64,7 +64,7 @@ class Ui_SplashScreen(object):
                                        "}\n"
                                        "QProgressBar::chunk{\n"
                                        "    border-radius: 10px;\n"
-                                       "    background-color: qlineargradient(spread:pad, x1:0, y1:0.506, x2:0.960227, y2:0.54, stop:0 rgba(0, 225, 0, 255), stop:1 rgba(0, 170, 0, 255));\n"
+                                       "    background-color: qlineargradient(spread:pad, x1:0, y1:0.506, x2:0.960227, y2:0.54, stop:0 rgba(99, 103, 110, 255), stop:1 rgba(103, 115, 135, 255));\n"
                                        "}")
         self.progressBar.setProperty("value", 24)
         self.progressBar.setObjectName("progressBar")
