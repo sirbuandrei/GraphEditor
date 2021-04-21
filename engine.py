@@ -1,20 +1,23 @@
 #
 from node import Node, Connection, Edge
 
-from PyQt5.QtCore import QPointF, Qt, QSequentialAnimationGroup
+from PyQt5.QtCore import (QPointF, QSequentialAnimationGroup, QVariantAnimation)
 from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtGui import QColor
 
-from ctypes import c_float, c_int32, cast, byref, POINTER
+from ctypes import (c_float, c_int32, cast, byref, POINTER)
 import numpy as np
 import math
 from collections import defaultdict
-from numba import njit
 
 # CONSTANTS
 SOFTENING_CONSTANT = 0.15
 G = 39.5
 dt = 0.017
-FRICTION = 0.77
+
+# ANIMATION COLORS
+DFS_COLOR = QColor('yellow')
+BFS_COLOR = QColor('orange')
 
 
 class GraphEngine(object):
@@ -28,13 +31,13 @@ class GraphEngine(object):
         self.directed_graph = defaultdict(list)
         self.undirected_graph = defaultdict(list)
 
-        self.edge_ideal_length = 150
         self.node_radius = 15
         self.node_fieldRadius = 80
         self.graph_data = ''
 
         self.label_node_count = self.view.frame_graph.findChild(QLineEdit, 'lineEdit_node_count')
-        self.sequential_animation = QSequentialAnimationGroup()
+        self.DFS_sequential = QSequentialAnimationGroup()
+        self.BFS_sequential = QSequentialAnimationGroup()
 
         self.gravity = True
         self.force_mode = False
@@ -58,18 +61,6 @@ class GraphEngine(object):
 
         self.manipulate_data(text_received)
 
-    # def check(self, text_received):
-    #     if not text_received:
-    #         return False
-    #
-    #     graph_lines = text_received.split('\n')
-    #     for line in graph_lines:
-    #         _line = list(filter(None, line.split(' ')))
-    #         if len(_line) > 3:
-    #             return False
-    #
-    #     return True
-
     def manipulate_data(self, text_received):
         self.graph_data = text_received
 
@@ -86,8 +77,10 @@ class GraphEngine(object):
                     nodes.append(_line[0])
                 if _line[1] not in nodes:
                     nodes.append(_line[1])
-                if (_line[0], _line[1]) not in edges:
-                    edges.append((_line[0], _line[1]))
+                if (_line[0], _line[1]) not in edges \
+                        and _line[0] is not _line[1]:
+                    cost = _line[2] if len(_line) == 3 else None
+                    edges.append((_line[0], _line[1], cost))
 
         self.add_remove_nodes(nodes)
         self.add_remove_edges(edges)
@@ -101,7 +94,7 @@ class GraphEngine(object):
                     nodes.remove(node_text)
                     break
             if not found:
-                edge_copy = self.edges
+                edge_copy = self.edges.copy()
                 for edge in edge_copy:
                     if edge.node1 == node or edge.node2 == node:
                         self.edges.remove(edge)
@@ -123,12 +116,12 @@ class GraphEngine(object):
         edge_copy = self.edges.copy()
         for edge in edge_copy:
             found = False
-            for tup in edges:
-                n1, n2 = tup
-                if edge.node1.__repr__() == n1 and \
-                        edge.node2.__repr__() == n2:
+            for elem in edges:
+                n1, n2, cost = elem
+                if edge.node1.__repr__() == n1 and edge.node2.__repr__() == n2 and \
+                        edge.cost == cost:
                     found = True
-                    edges.remove(tup)
+                    edges.remove(elem)
                     break
             if not found:
                 self.directed_graph[edge.node1].remove(edge.node2)
@@ -137,14 +130,14 @@ class GraphEngine(object):
                 self.view.scene.removeItem(edge)
                 self.edges.remove(edge)
 
-        for tup in edges:
-            n1, n2 = tup
+        for elem in edges:
+            n1, n2, cost = elem
             for node in self.nodes:
                 if node.__repr__() == n1:
                     node1 = node
                 elif node.__repr__() == n2:
                     node2 = node
-            edge = Edge(node1, node2, self)
+            edge = Edge(node1, node2, self, cost)
             self.edges.append(edge)
             self.view.scene.addItem(edge)
             self.directed_graph[node1].append(node2)
@@ -157,33 +150,27 @@ class GraphEngine(object):
                 node.force = self.forces(node)
 
                 tempPos = node.pos()
-                node.setPos(node.x() + node.force.x() * (dt ** 2),
-                            node.y() + node.force.y() * (dt ** 2))
+                node.moveBy(node.force.x() * (dt ** 2),
+                            node.force.y() * (dt ** 2))
                 node.oldPos = tempPos
 
-                self.check_collision(node)
+            self.check_collision(node)
 
-    # def update_edges(self):
-    #     for edge in self.edges:
-    #         node1 = edge.node1
-    #         node2 = edge.node2
-    #
-    #         dx, dy, angle = self.get_angle(node1, node2)
-    #         d = math.sqrt(dx * dx + dy * dy)
-    #         diff = self.edge_ideal_length - d
-    #         percent = diff / d / 2
-    #         offsetX = dx * percent
-    #         offsetY = dy * percent
-    #
-    #         node1.setPos(node1.x() - offsetX, node1.y() - offsetY)
-    #         node2.setPos(node2.x() + offsetX, node2.y() + offsetY)
+    def draw_edges(self):
+        for edge in self.edges:
+            dx, dy, alfa = self.get_angle(edge.node1, edge.node2)
 
-    # def draw_edges(self):
-    #     for edge in self.edges:
-    #         dx, dy, alfa1 = self.get_angle(edge.node1, edge.node2)
-    #         dx, dy, alfa2 = self.get_angle(edge.node2, edge.node1)
-    #         path = edge.create_path(self.node_radius / 2, self.directed, dx, dy, alfa1, alfa2)
-    #         edge.setPath(path)
+            start_point = QPointF(edge.node1.x() + self.node_radius * (math.cos(alfa)),
+                                  edge.node1.y() + self.node_radius * (math.sin(alfa)))
+
+            end_point = QPointF(edge.node2.x() - self.node_radius * (math.cos(alfa)),
+                                edge.node2.y() - self.node_radius * (math.sin(alfa)))
+
+            control_point = QPointF(start_point.x() + (end_point.x() - start_point.x()) / 2,
+                                    start_point.y() + (end_point.y() - start_point.y()) / 2)
+
+            created_path = edge.create_path(start_point, control_point, end_point, self.directed, alfa)
+            edge.setPath(created_path)
 
     def update_connections(self):
         for connection in self.connections:
@@ -230,8 +217,8 @@ class GraphEngine(object):
             # force = (G * (dsq * dsq_sc)) ** -1
             force = (dsq * math.sqrt(dsq + SOFTENING_CONSTANT)) / G
 
-            force_x = float(force) * math.cos(alfa)  # - ((node.forceR.x()) if node.isColliding else 0)
-            force_y = float(force) * math.sin(alfa)  # - ((node.forceR.y()) if node.isColliding else 0)
+            force_x = float(force) * math.cos(alfa)
+            force_y = float(force) * math.sin(alfa)
 
             return QPointF(force_x * abs(dx), force_y * abs(dy))
         return QPointF(0, 0)
@@ -239,12 +226,21 @@ class GraphEngine(object):
     def check_collision(self, node):
         for other_node in self.nodes:
             if other_node is not node:
+
                 dx, dy, alfa = self.get_angle(node.center(), other_node.center())
                 dsq = math.sqrt(dx * dx + dy * dy)
+
                 length = self.node_fieldRadius + self.node_radius
-                if dsq <= length and other_node not in node.connectedTo and not other_node.pinned:
-                    node.connectedTo.append(other_node)
-                    self.connections.append(Connection(node, other_node, length))
+                if dsq <= length and other_node not in node.connectedTo:
+                    if self.gravity:
+                        node.connectedTo.append(other_node)
+                        self.connections.append(Connection(node, other_node, length))
+                    else:
+                        overlap = dsq - self.node_radius - self.node_fieldRadius
+                        node.moveBy(-0.5 * overlap * (node.x() - other_node.x()) / dsq,
+                                    -0.5 * overlap * (node.y() - other_node.y()) / dsq)
+                        other_node.moveBy(0.5 * overlap * (node.x() - other_node.x()) / dsq,
+                                          0.5 * overlap * (node.y() - other_node.y()) / dsq)
 
     def get_angle(self, point1, point2):
         dy = point2.y() - point1.y()
@@ -262,67 +258,57 @@ class GraphEngine(object):
         y = y * (1.5 - (x2 * y * y))
         return y
 
-    def start_DFS(self, node_text):
-        if node_text == '':
-            self.reset_colors()
+    def start_animations(self, text_DFS, text_BFS):
+        if not text_DFS and not text_BFS:
+            return
 
+        self.DFS_sequential.clear()
+        self.BFS_sequential.clear()
+
+        adj_list = self.undirected_graph if not self.directed else self.directed_graph
         for node in self.nodes:
-            if node.__repr__() == node_text:
-                adj_list = self.undirected_graph
-
-                if self.directed:
-                    adj_list = self.directed_graph
-
+            if node.__repr__() == text_DFS:
                 visited = np.zeros(len(self.nodes))
-                self.sequential_animation.clear()
                 self.DFS(node, visited, adj_list)
-                self.sequential_animation.start()
-                return
+            elif node.__repr__() == text_BFS:
+                visited = np.zeros(len(self.nodes))
+                self.BFS(node, visited, adj_list)
 
-        return
+        self.DFS_sequential.start()
+        self.BFS_sequential.start()
 
     def DFS(self, start, visited, adj_list):
         visited[self.nodes.index(start)] = 1
-        self.sequential_animation.addAnimation(start.DFS_animation)
+        self.DFS_sequential.addAnimation(self.create_animation(start, start.pen.color(), DFS_COLOR))
         for node in adj_list[start]:
             if not visited[self.nodes.index(node)]:
                 edge = self.find_edge(start, node)
-                self.sequential_animation.addAnimation(edge.DFS_animation)
+                self.DFS_sequential.addAnimation(self.create_animation(edge, start.pen.color(), DFS_COLOR))
                 self.DFS(node, visited, adj_list)
-
-    def start_BFS(self, node_text):
-        if node_text == '':
-            self.reset_colors()
-
-        for node in self.nodes:
-            if node.__repr__() == node_text:
-                adj_list = self.undirected_graph
-
-                if self.directed:
-                    adj_list = self.directed_graph
-
-                visited = np.zeros(len(self.nodes))
-                self.sequential_animation.clear()
-                self.BFS(node, visited, adj_list)
-                self.sequential_animation.start()
-                return
-
-        return
 
     def BFS(self, start, visited, adj_list):
         queue = [start]
         visited[self.nodes.index(start)] = 1
-        self.sequential_animation.addAnimation(start.BFS_animation)
+        self.BFS_sequential.addAnimation(self.create_animation(start, start.pen.color(), BFS_COLOR))
         while queue:
             s = queue.pop(0)
             for node in adj_list[s]:
                 node_index = self.nodes.index(node)
                 if not visited[node_index]:
                     edge = self.find_edge(s, node)
-                    self.sequential_animation.addAnimation(edge.BFS_animation)
-                    self.sequential_animation.addAnimation(node.BFS_animation)
+                    self.BFS_sequential.addAnimation(self.create_animation(edge, edge.pen().color(), BFS_COLOR))
+                    self.BFS_sequential.addAnimation(self.create_animation(node, node.pen.color(), BFS_COLOR))
                     queue.append(node)
                     visited[node_index] = 1
 
-    def reset_colors(self):
-        pass
+    def create_animation(self, item, start_color, end_color):
+        animation = QVariantAnimation()
+        animation.DeletionPolicy(QVariantAnimation.DeleteWhenStopped)
+
+        animation.valueChanged.connect(item.handle_valueChanged)
+        animation.setDuration(1000)
+
+        animation.setStartValue(start_color)
+        animation.setEndValue(end_color)
+
+        return animation

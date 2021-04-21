@@ -6,24 +6,10 @@ import source
 
 
 class Ui_MainWindow(object):
-
-    dark_theme_colors = (QtGui.QColor('#23272a'), QtGui.QColor('#63676e'))
-    dark_palette_main = QtGui.QPalette()
-    dark_palette_main.setColor(QtGui.QPalette.Window, dark_theme_colors[0])
-    dark_palette_other = QtGui.QPalette()
-    dark_palette_other.setColor(QtGui.QPalette.Window, dark_theme_colors[1])
-
-    light_theme_colors = (QtGui.QColor('#6e6451'), QtGui.QColor('#7c8a94'))
-    light_palette_main = QtGui.QPalette()
-    light_palette_main.setColor(QtGui.QPalette.Window, light_theme_colors[0])
-    light_palette_other = QtGui.QPalette()
-    light_palette_other.setColor(QtGui.QPalette.Base, light_theme_colors[1])
-
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(900, 600)
         MainWindow.setMinimumSize(QtCore.QSize(900, 600))
-        MainWindow.setMaximumSize(QtCore.QSize(900, 600))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         #self.centralwidget.setStyleSheet('background-color: rgb(35, 39, 42);')
@@ -358,6 +344,7 @@ class Ui_MainWindow(object):
         self.label_DFS.setAlignment(QtCore.Qt.AlignCenter)
         self.label_DFS.setObjectName("label_DFS")
         self.horizontalLayout_2_0.addWidget(self.label_DFS)
+
         self.lineEdit_DFS = QtWidgets.QLineEdit(self.frame_DFS)
         self.lineEdit_DFS.setMinimumSize(QtCore.QSize(55, 30))
         self.lineEdit_DFS.setMaximumSize(QtCore.QSize(55, 30))
@@ -372,6 +359,21 @@ class Ui_MainWindow(object):
         self.lineEdit_DFS.setAlignment(QtCore.Qt.AlignCenter)
         self.lineEdit_DFS.setObjectName("lineEdit_DFS")
         self.horizontalLayout_2_0.addWidget(self.lineEdit_DFS)
+
+        self.pushButton_clear_DFS = QtWidgets.QPushButton(self.frame_DFS)
+        self.pushButton_clear_DFS.setMaximumSize(QtCore.QSize(30, 30))
+        self.pushButton_clear_DFS.setMinimumSize(QtCore.QSize(30, 30))
+        self.pushButton_clear_DFS.setStyleSheet("""QPushButton{
+                                                    background-color: transparent;
+                                                    border-radius: 5px;
+                                                    }
+                                                    QPushButton::hover{
+                                                    background-color: rgb(44, 47, 51);
+                                                    }""")
+        self.pushButton_clear_DFS.setIcon(QtGui.QIcon(r"icons/cil-remove.png"))
+        self.pushButton_clear_DFS.setObjectName("pushButton_clear_DFS")
+        self.horizontalLayout_2_0.addWidget(self.pushButton_clear_DFS)
+
         self.verticalLayout_0.addWidget(self.frame_DFS)
         self.frame_BFS = QtWidgets.QFrame(self.frame_change_settings)
         self.frame_BFS.setMinimumSize(QtCore.QSize(0, 50))
@@ -406,6 +408,21 @@ class Ui_MainWindow(object):
         self.lineEdit_BFS.setAlignment(QtCore.Qt.AlignCenter)
         self.lineEdit_BFS.setObjectName("lineEdit_BFS")
         self.horizontalLayout_0.addWidget(self.lineEdit_BFS)
+
+        self.pushButton_clear_BFS = QtWidgets.QPushButton(self.frame_BFS)
+        self.pushButton_clear_BFS.setMaximumSize(QtCore.QSize(30, 30))
+        self.pushButton_clear_BFS.setMinimumSize(QtCore.QSize(30, 30))
+        self.pushButton_clear_BFS.setStyleSheet("""QPushButton{
+                                                    background-color: transparent;
+                                                    border-radius: 5px;
+                                                    }
+                                                    QPushButton::hover{
+                                                    background-color: rgb(44, 47, 51);
+                                                    }""")
+        self.pushButton_clear_BFS.setIcon(QtGui.QIcon(r"icons/cil-remove.png"))
+        self.pushButton_clear_BFS.setObjectName("pushButton_clear_DFS")
+        self.horizontalLayout_0.addWidget(self.pushButton_clear_BFS)
+
         self.verticalLayout_0.addWidget(self.frame_BFS)
         self.frame_directed_undirected = QtWidgets.QFrame(self.frame_change_settings)
         self.frame_directed_undirected.setMinimumSize(QtCore.QSize(0, 50))
@@ -495,8 +512,7 @@ class Ui_MainWindow(object):
         self.frame_node_data.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_node_data.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_node_data.setObjectName("frame_node_data")
-        self.frame_node_data.setAutoFillBackground(True)
-        self.frame_node_data.setPalette(self.light_palette_other)
+
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.frame_node_data)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.label_node_count = QtWidgets.QLabel(self.frame_node_data)
@@ -545,16 +561,19 @@ class Ui_MainWindow(object):
         self.horizontalLayout_9.addWidget(self.frame_node_data)
 
         self.view = GraphicsView(self.frame_graph)
-        # self.view.setStyleSheet("QGraphicsView{\n"
-        #                                 "    background-color: rgb(99, 103, 110);\n"
-        #                                 "    border-radius: 15px;\n"
-        #                                 "}\n"
-        #                                 "")
         self.view.setObjectName("graphicsView")
 
         self.gripper = QtWidgets.QSizeGrip(MainWindow)
-        self.gripper.setStyleSheet('background-color: yellow;')
-        self.gripper.setMouseTracking(True)
+        self.gripper.setMaximumSize(QtCore.QSize(20, 20))
+        self.gripper.setMinimumSize(QtCore.QSize(20, 20))
+        self.gripper.setStyleSheet("""
+            QSizeGrip {
+	            background-image: url(:/icons/cil-size-grip.png);
+	            background-position: center;
+	            background-repeat: no-repeat;
+            }
+        """)
+        self.gripper.setObjectName('gripper')
 
         self.horizontalLayout.addWidget(self.frame_container)
         self.horizontalLayout.addWidget(self.view)
@@ -562,31 +581,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.frame_central)
         self.verticalLayout.addWidget(self.gripper, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
 
-        # self.frame_grip = QtWidgets.QFrame(self.centralwidget)
-        # self.frame_grip.setMinimumSize(QtCore.QSize(0, 15))
-        # self.frame_grip.setMaximumSize(QtCore.QSize(16777215, 15))
-        # self.frame_grip.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        # self.frame_grip.setFrameShadow(QtWidgets.QFrame.Raised)
-        # self.frame_grip.setStyleSheet('background-color: rgb(35, 39, 42);')
-        # self.frame_grip.setObjectName('frame_grip')
-        #
-        # self.horizontalLayout_7 = QtWidgets.QHBoxLayout(self.frame_grip)
-        # self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
-        # self.horizontalLayout_7.setObjectName("horizontalLayout_7")
-        #
-        # spacerItem = QtWidgets.QSpacerItem(15, 15, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        # self.horizontalLayout_7.addItem(spacerItem)
-        #
-        # # self.frame_size_grip = QtWidgets.QFrame(self.frame_grip)
-        # # self.frame_grip.setMinimumSize(QtCore.QSize(15, 15))
-        # # self.frame_grip.setMaximumSize(QtCore.QSize(15, 15))
-        # # self.frame_grip.setLayoutDirection(QtCore.Qt.RightToLeft)
-        # # self.frame_size_grip.setStyleSheet('background-color: transparent);')
-
-        # self.verticalLayout.addWidget(self.frame_grip)
-
         MainWindow.setCentralWidget(self.centralwidget)
-
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 

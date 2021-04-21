@@ -1,5 +1,6 @@
 #
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QPen
 from PyQt5.QtWidgets import QFileDialog
 from styles import Styles
 
@@ -31,14 +32,10 @@ class Ui_Functions(object):
 
     def run_commands(self):
         self.MainWindow.view.engine.node_radius = self.MainWindow.spinBox_node_radius.value()
-        # for node in self.MainWindow.view.engine.nodes:
-        #     node.text.set_pos()
 
         text_BFS = self.MainWindow.lineEdit_BFS.text()
-        self.MainWindow.view.engine.start_BFS(text_BFS)
-
         text_DFS = self.MainWindow.lineEdit_DFS.text()
-        self.MainWindow.view.engine.start_DFS(text_DFS)
+        self.MainWindow.view.engine.start_animations(text_DFS, text_BFS)
 
     def force_mode(self):
         self.MainWindow.view.engine.force_mode = not self.MainWindow.view.engine.force_mode
@@ -77,4 +74,26 @@ class Ui_Functions(object):
         self.MainWindow.frame_change_settings.setStyleSheet(theme[1])
         self.MainWindow.frame_central_top.setStyleSheet(theme[1])
         self.MainWindow.view.setStyleSheet(theme[2])
+
+    def DFS_clear(self):
+        if self.MainWindow.lineEdit_DFS.text() == '':
+            return
+        self.MainWindow.lineEdit_DFS.clear()
+        self.reset_items_color()
+
+    def BFS_clear(self):
+        if self.MainWindow.lineEdit_BFS.text() == '':
+            return
+        self.MainWindow.lineEdit_BFS.clear()
+        self.reset_items_color()
+
+    def reset_items_color(self):
+        self.MainWindow.view.engine.DFS_sequential.clear()
+        self.MainWindow.view.engine.BFS_sequential.clear()
+
+        for node in self.MainWindow.view.engine.nodes:
+            node.pen = QPen(Qt.white, node.thickness, Qt.SolidLine)
+
+        for edge in self.MainWindow.view.engine.edges:
+            edge.setPen(QPen(Qt.white, 1.5, Qt.SolidLine))
 

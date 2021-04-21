@@ -28,7 +28,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.textEdit_node_data.installEventFilter(self)
         self.frame_actions_btns.installEventFilter(self)
-        self.gripper.installEventFilter(self)
 
     def setup_ui_functions(self):
         self.pushButton_close.clicked.connect(lambda: self.close())
@@ -41,6 +40,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_force_mode.clicked.connect(self.functions.force_mode)
         self.pushButton_directed.clicked.connect(self.functions.select_directed)
         self.pushButton_undirected.clicked.connect(self.functions.select_undirected)
+        self.pushButton_clear_DFS.clicked.connect(self.functions.DFS_clear)
+        self.pushButton_clear_BFS.clicked.connect(self.functions.BFS_clear)
 
     def setup_initial_settings(self):
         self.frame_change_settings.hide()
@@ -68,33 +69,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.functions.maximize_restore()
 
             elif event.type() == QEvent.MouseButtonPress:
-                self.drag_frame_strat_pos = event.pos()
+                self.drag_pos = event.pos()
 
             elif event.type() == QEvent.MouseMove:
-
                 if not self.isMaximized():
-                    self.move(event.globalPos() - self.drag_frame_strat_pos)
+                    self.move(event.globalPos() - self.drag_pos)
                 else:
                     self.functions.maximize_restore()
                     #self.move(_event.globalPos() - self.mapFromGlobal(self.drag_pos))
                     # TODO: check bug
-
-        # elif obj == self.gripper:
-        #
-        #     if event.type() == QEvent.MouseButtonPress:
-        #         self.resizing = True
-        #         self.height_start = self.height()
-        #         self.width_start = self.width()
-        #         self.drag_grip_start_pos = event.pos()
-        #
-        #     elif event.type() == QEvent.MouseButtonRelease:
-        #         self.resizing = False
-        #
-        #     if event.type() == QEvent.MouseMove and self.resizing:
-        #         delta = event.pos() - self.drag_grip_start_pos
-        #         new_height = self.height_start + delta.y()
-        #         new_width = self.width_start + delta.x()
-        #         self.setFixedSize(new_width, new_height)
 
         return super(MainWindow, self).eventFilter(obj, event)
 

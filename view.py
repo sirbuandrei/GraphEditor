@@ -19,12 +19,12 @@ class GraphicsView(QGraphicsView):
         self.setScene(self.scene)
         self.show()
 
-    def resizeEvent(self, _event):
+    def resizeEvent(self, event):
         self.scene.setSceneRect(QRectF(10, 10, self.width() - 10, self.height() - 10))
 
-    def timerEvent(self, _timerEvent):
+    def timerEvent(self, timerEvent):
         if self.engine.force_mode:
             self.engine.update_nodes()
             self.engine.update_connections()
-        #self.engine.draw_edges()
+        self.engine.draw_edges()
         self.update()
