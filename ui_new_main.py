@@ -1,4 +1,8 @@
-#
+"""
+
+
+"""
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from qtwidgets import AnimatedToggle
 from view import GraphicsView
@@ -6,10 +10,13 @@ import source
 
 
 class Ui_MainWindow(object):
+    MINIMUM_HEIGHT = 600
+    MINIMUM_WIDTH = 900
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(900, 600)
-        MainWindow.setMinimumSize(QtCore.QSize(900, 600))
+        MainWindow.setMinimumSize(QtCore.QSize(self.MINIMUM_WIDTH, self.MINIMUM_HEIGHT))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         #self.centralwidget.setStyleSheet('background-color: rgb(35, 39, 42);')
@@ -424,6 +431,81 @@ class Ui_MainWindow(object):
         self.horizontalLayout_0.addWidget(self.pushButton_clear_BFS)
 
         self.verticalLayout_0.addWidget(self.frame_BFS)
+
+
+        #########
+
+        self.frame_DIJKSTRA = QtWidgets.QFrame(self.frame_change_settings)
+        self.frame_DIJKSTRA.setMinimumSize(QtCore.QSize(0, 50))
+        self.frame_DIJKSTRA.setMaximumSize(QtCore.QSize(16777215, 50))
+        self.frame_DIJKSTRA.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_DIJKSTRA.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_DIJKSTRA.setObjectName("frame_DIJKSTRA")
+        self.horizontalLayout_10 = QtWidgets.QHBoxLayout(self.frame_DIJKSTRA)
+        self.horizontalLayout_10.setObjectName("horizontalLayout_10")
+
+        self.label_DIJKSTRA = QtWidgets.QLabel(self.frame_DIJKSTRA)
+        font = QtGui.QFont()
+        font.setFamily("Happy School")
+        font.setPointSize(14)
+        self.label_DIJKSTRA.setFont(font)
+        self.label_DIJKSTRA.setStyleSheet("QLabel{\n"
+                                     "    color: white;\n"
+                                     "}")
+        self.label_DIJKSTRA.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_DIJKSTRA.setObjectName("label_DIJKSTRA")
+        self.horizontalLayout_10.addWidget(self.label_DIJKSTRA)
+
+        self.lineEdit_DIJKSTRA_src = QtWidgets.QLineEdit(self.frame_DIJKSTRA)
+        self.lineEdit_DIJKSTRA_src.setMinimumSize(QtCore.QSize(35, 30))
+        self.lineEdit_DIJKSTRA_src.setMaximumSize(QtCore.QSize(35, 30))
+        self.lineEdit_DIJKSTRA_src.setStyleSheet("QLineEdit{\n"
+                                        "    background-color: transparent;\n"
+                                        "    border: none;\n"
+                                        "    border-bottom: 2px solid white;\n"
+                                        "    border-bottom-style: solid; \n"
+                                        "    color:  white;\n"
+                                        "    font: 63 14pt \"Segoe UI Semibold\";\n"
+                                        "}")
+        self.lineEdit_DIJKSTRA_src.setAlignment(QtCore.Qt.AlignCenter)
+        self.lineEdit_DIJKSTRA_src.setObjectName("lineEdit_DIJKSTRA_src")
+        self.horizontalLayout_10.addWidget(self.lineEdit_DIJKSTRA_src)
+
+        self.lineEdit_DIJKSTRA_end = QtWidgets.QLineEdit(self.frame_DIJKSTRA)
+        self.lineEdit_DIJKSTRA_end.setMinimumSize(QtCore.QSize(35, 30))
+        self.lineEdit_DIJKSTRA_end.setMaximumSize(QtCore.QSize(35, 30))
+        self.lineEdit_DIJKSTRA_end.setStyleSheet("QLineEdit{\n"
+                                        "    background-color: transparent;\n"
+                                        "    border: none;\n"
+                                        "    border-bottom: 2px solid white;\n"
+                                        "    border-bottom-style: solid; \n"
+                                        "    color:  white;\n"
+                                        "    font: 63 14pt \"Segoe UI Semibold\";\n"
+                                        "}")
+        self.lineEdit_DIJKSTRA_end.setAlignment(QtCore.Qt.AlignCenter)
+        self.lineEdit_DIJKSTRA_end.setObjectName("lineEdit_DIJKSTRA_end")
+        self.horizontalLayout_10.addWidget(self.lineEdit_DIJKSTRA_end)
+
+        self.pushButton_clear_DIJKSTRA = QtWidgets.QPushButton(self.frame_DIJKSTRA)
+        self.pushButton_clear_DIJKSTRA.setMaximumSize(QtCore.QSize(30, 30))
+        self.pushButton_clear_DIJKSTRA.setMinimumSize(QtCore.QSize(30, 30))
+        self.pushButton_clear_DIJKSTRA.setStyleSheet("""QPushButton{
+                                                           background-color: transparent;
+                                                           border-radius: 5px;
+                                                           }
+                                                           QPushButton::hover{
+                                                           background-color: rgb(44, 47, 51);
+                                                           }""")
+        self.pushButton_clear_DIJKSTRA.setIcon(QtGui.QIcon(r"icons/cil-remove.png"))
+        self.pushButton_clear_DIJKSTRA.setObjectName("pushButton_clear_DIJKSTRA")
+        self.horizontalLayout_10.addWidget(self.pushButton_clear_DIJKSTRA)
+
+        self.verticalLayout_0.addWidget(self.frame_DIJKSTRA)
+
+
+        #######
+
+
         self.frame_directed_undirected = QtWidgets.QFrame(self.frame_change_settings)
         self.frame_directed_undirected.setMinimumSize(QtCore.QSize(0, 50))
         self.frame_directed_undirected.setMaximumSize(QtCore.QSize(16777215, 50))
@@ -566,13 +648,6 @@ class Ui_MainWindow(object):
         self.gripper = QtWidgets.QSizeGrip(MainWindow)
         self.gripper.setMaximumSize(QtCore.QSize(20, 20))
         self.gripper.setMinimumSize(QtCore.QSize(20, 20))
-        self.gripper.setStyleSheet("""
-            QSizeGrip {
-	            background-image: url(:/icons/cil-size-grip.png);
-	            background-position: center;
-	            background-repeat: no-repeat;
-            }
-        """)
         self.gripper.setObjectName('gripper')
 
         self.horizontalLayout.addWidget(self.frame_container)
@@ -594,10 +669,10 @@ class Ui_MainWindow(object):
         self.label_node_data.setText(_translate("MainWindow", "Node data"))
         self.label_force_mode.setText(_translate("MainWindow", "Force mode"))
         self.pushButton_force_mode.setText(_translate("MainWindow", "PushButton"))
-        # self.label_force_mode_edge_ideal_length.setText(_translate("MainWindow", "Edge ideal length"))
         self.label_node_radius.setText(_translate("MainWindow", "Node radius"))
         self.label_DFS.setText(_translate("MainWindow", "DFS"))
         self.label_BFS.setText(_translate("MainWindow", "BFS"))
+        self.label_DIJKSTRA.setText(_translate("MainWindow", 'DIJKSTRA'))
         self.pushButton_directed.setText(_translate("MainWindow", "Directed"))
         self.pushButton_undirected.setText(_translate("MainWindow", "Undirected"))
         self.pushButton_run_commands.setText(_translate("MainWindow", "Run Commands"))

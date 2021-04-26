@@ -1,26 +1,192 @@
-#
+"""Fisierul contine clasele corespunzaotare engin-ului aplicatiei"""
+
 from node import Node, Connection, Edge
 
 from PyQt5.QtCore import (QPointF, QSequentialAnimationGroup, QVariantAnimation)
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QColor
 
-from ctypes import (c_float, c_int32, cast, byref, POINTER)
 import numpy as np
 import math
 from collections import defaultdict
 
-# CONSTANTS
+# Constante
 SOFTENING_CONSTANT = 0.15
 G = 39.5
 dt = 0.017
 
-# ANIMATION COLORS
+# Culorile animatilor
 DFS_COLOR = QColor('yellow')
 BFS_COLOR = QColor('orange')
+DIJKSTRA_COLOR = QColor('red')
+
+
+class Graph:
+    """Contine informatiile despre un graf
+
+    Informatiile grafului sunt lista de adiacenta, costurile muchiilor
+    si orientarea grafului. Acestea se for folosi mai departe pentru
+    aplicarea algorimtilor (DFS, BFS, DIJKSTRA)
+
+    Atribute
+    ---------
+    edges: dict
+        lista de adiacenta a grafului
+    weights: dict
+        lista costurilor muchiilor
+    directed:
+        orientarea grafului
+
+    Metode
+    ------
+    __delitem__(key)
+        sterge un nod
+    add_edge(from_node, to_node, weight)
+        adauga o muchie
+    remove_edge(from_node, to_node)
+        sterge o muchie
+    clear()
+        sterge toate datele
+    """
+
+    def __init__(self, directed):
+        self.edges = defaultdict(list)
+        self.weights = {}
+        self.directed = directed
+
+    def __delitem__(self, key):
+        """Elimina din dictionarul de muchii a unui nod"""
+
+        del self.edges[key]
+
+    def add_edge(self, from_node, to_node, weight):
+        """Adauga o muchie intre 2 noduri cu un cost
+
+        Daca graful este neorientat se va mai adauga o muchie
+        si de la to_node la from_node cu costul respectiv
+
+        Parametrii
+        ----------
+        from_node : Node
+            primul nod al muchiei
+        to_node : Node
+            al doilea nod al muchiei
+        weight : int
+            costul muchiei
+        """
+
+        self.edges[from_node].append(to_node)
+        self.weights[(from_node, to_node)] = weight
+
+        if not self.directed:
+            self.edges[to_node].append(from_node)
+            self.weights[(to_node, from_node)] = weight
+
+    def remove_edge(self, from_node, to_node):
+        """Sterge muchia dintre 2 noduri si costul ei
+
+        Daca graful este neorientat se va sterge si muchia de
+        la to_node la from_node, inclusiv costul acesteia
+
+        Parametrii
+        ----------
+        from_node : Node
+            primul nod al muchiei
+        to_node : Node
+            al doilea nod al muchiei
+        """
+
+        self.edges[from_node].remove(to_node)
+        del self.weights[(from_node, to_node)]
+
+        if not self.directed:
+            self.edges[to_node].remove(from_node)
+            del self.weights[(to_node, from_node)]
+
+    def clear(self):
+        """Sterge toate datele grafului"""
+
+        self.edges.clear()
+        self.weights.clear()
 
 
 class GraphEngine(object):
+    """Engiun-ul grafului
+
+    Toate nodurile sunt atrase spre centrul sceneului de o forta de gravitatie, fiecare avand un camp
+    de intercatiune propriu. Daca acest camp se intersecteaza cu un alt nod, ele for forma o
+    conexiune si vor actiona unul in funtie de celalalt. Astfel se o obtine o aseazare centrata
+    si imprastiata a nodurilor in scene.
+    Exsita 2 liste de adiacenta, una pentru cazul unui graf orientat si una pentru cazul unui graf neorientat.
+
+    Artibute
+    --------
+    view : QGraphicsView
+        viewport-ul grafului
+    node : list
+        lista de noduri
+    edges : list
+        lista de muchii
+    connections : list
+        lista de conexiuni formate de noduri
+    directed_graph : Graph
+        graful orientat formate de datele primite
+    undirected_graph : Graph
+        graful neorientat formate de datele primite
+    node_fieldRadius : int
+        raza campului de interaciune a nodurilor
+    label_node_count : QLabel
+        labelul care contine numarul de noduri
+    DFS_sequential : QSequentialAnimationGroup
+        grupul de animatii in serie dupa efectuarea algorimului DFS
+    BFS_sequential : QSequentialAnimationGroup
+        grupul de animatii in serie dupa efectuarea algorimului BFS
+    DIJKSTRA_sequential : QSequentialAnimationGroup
+        grupul de animatii in serie dupa efectuarea algorimului DIJKSTRA
+    sequential : QSequentialAnimationGroup
+        grupul de animatii in serie responsabil de celelate 3 tipuri de aniamtii
+    gravity : bool
+    force_mode : bool
+    directed :  bool
+        orientarea grafului
+
+    Metode
+    ------
+    receive_data(graph_data)
+        Primeste datele grafului
+    manipulate_data(graph_data)
+        maniplueaza datele grafului
+    add_remove_nodes(nodes)
+        adauga sau sterge noduri
+    add_remove_edges(edges)
+        adauga sau sterge muchii
+    update_nodes()
+        actualizeaza pozitia nodurilor
+    draw_edges()
+        randeaza muchia dintre 2 noduri
+    update_connections()
+        actualizeaza pozitile nodurilor in funtie de conexiuni
+    forces(node)
+        calculeaza forta de gravitatie
+    check_collision(node)
+        actualizeaza conexiunile intre noduri
+    get_angle(point1, point2)
+        calculeaza distantele si ungiul dintre 2 pucnte
+    find_edge(node1, node2)
+        cauta o muchie intre 2 noduri
+    remove_all_connections()
+        sterge toate conexiunle
+    start_animations(text_DFS, text_BFS, text_DIJKSTRA_src, text_DIJKSTRA_end)
+        incepe animatiile alese
+    DFS(start, visited, graph)
+        algoritmul de DFS
+    BFS(start, visited, graph)
+        algoritmul de BFS
+    DIJKSTRA(initial, end, graph)
+        algorimtul DIJKSTRA
+    create_animation(item, start_color, end_color)
+        creaza o animatie a unui item
+    """
 
     def __init__(self, view):
         self.view = view
@@ -28,23 +194,42 @@ class GraphEngine(object):
         self.nodes = []
         self.edges = []
         self.connections = []
-        self.directed_graph = defaultdict(list)
-        self.undirected_graph = defaultdict(list)
+        self.directed_graph = Graph(directed=True)
+        self.undirected_graph = Graph(directed=False)
 
         self.node_radius = 15
         self.node_fieldRadius = 80
-        self.graph_data = ''
+        #self.graph_data = ''
 
         self.label_node_count = self.view.frame_graph.findChild(QLineEdit, 'lineEdit_node_count')
+
         self.DFS_sequential = QSequentialAnimationGroup()
         self.BFS_sequential = QSequentialAnimationGroup()
+        self.DIJKSTRA_sequential = QSequentialAnimationGroup()
+        self.sequential = QSequentialAnimationGroup()
+
+        # Se atribuie cele 3 animatii ale algoritmilor animatiei de grup
+        self.sequential.addAnimation(self.DFS_sequential)
+        self.sequential.addAnimation(self.BFS_sequential)
+        self.sequential.addAnimation(self.DIJKSTRA_sequential)
 
         self.gravity = True
         self.force_mode = False
         self.directed = False
 
-    def receive_data(self, text_received):
-        if not text_received:
+    def receive_data(self, graph_data):
+        """Verifica datele grafului
+
+        Daca datele grafului sunt un string gol se sterg toate nodurile si muchile, la fel
+        si datele anterioare despre graf. In caz contrar se va apela metoda manipulate_data.
+
+        Parametrii
+        ----------
+        graph_data: str
+            datele grafului
+        """
+
+        if not graph_data:
 
             for node in self.nodes:
                 self.view.scene.removeItem(node)
@@ -59,104 +244,176 @@ class GraphEngine(object):
 
             return
 
-        self.manipulate_data(text_received)
+        self.manipulate_data(graph_data)
 
-    def manipulate_data(self, text_received):
-        self.graph_data = text_received
+    def manipulate_data(self, graph_data):
+        """Creearea grafului in funtie de datele primite
+
+        Separand textul primit de toate spatiile si caracterele de sfarsit de line
+        se vor obine toate nodurile, muchile si costurile acestora, daca este cazul.
+        Acestea se vor adauga in vectorii de nodes si eedges care se vor pasa mai
+        departe metodelor add_remove_nodes si add_remove_edges
+
+        Parametrii
+        ----------
+        graph_data: str
+            datele grafului
+        """
+
+        #self.graph_data = graph_data
 
         nodes = []
         edges = []
 
-        graph_lines = text_received.split('\n')
+        graph_lines = graph_data.split('\n')
         for line in graph_lines:
             _line = list(filter(None, line.split(' ')))
+            # Daca exista doar un nod pe line si nu a mai fost adaugat
             if len(_line) == 1 and _line[0] not in nodes:
                 nodes.append(_line[0])
+            # Daca exista mai multe elemente pe line
             elif len(_line) > 1:
+                # Se adauga primul nod
                 if _line[0] not in nodes:
                     nodes.append(_line[0])
+                # Se adauga cel de-al doilea nod
                 if _line[1] not in nodes:
                     nodes.append(_line[1])
+                # Se adauga muchia dintre cele 2 noduri si costul (daca exista)
                 if (_line[0], _line[1]) not in edges \
                         and _line[0] is not _line[1]:
-                    cost = _line[2] if len(_line) == 3 else None
+                    cost = _line[2] if len(_line) >= 3 else None
                     edges.append((_line[0], _line[1], cost))
 
         self.add_remove_nodes(nodes)
         self.add_remove_edges(edges)
 
     def add_remove_nodes(self, nodes):
+        """Adauga sau sterge noduri in functie de noile date
+
+        Interand prin nodurile actuale se cauta care dintre acestea nu se afla printre noile noduri
+        si se streg, inclusiv toate muchile actuale formate de acestea. Dupa stergerea celor
+        neuitilizare se itereaza prin noile noduri si se adauga in scene si in lisele de adiacenta.
+
+        Parametrii
+        ----------
+        nodes: list
+            Lista nodurilor reinnoita
+        """
+
         for node in self.nodes:
             found = False
+            # Daca nodul a fost gasit nu mai trebuie adaugat
             for node_text in nodes:
                 if node.__repr__() == node_text:
                     found = True
                     nodes.remove(node_text)
                     break
+            # Daca nodul nu este gasit se sterge, inclusiv muchiile
+            # formate de acesta
             if not found:
                 edge_copy = self.edges.copy()
+
                 for edge in edge_copy:
                     if edge.node1 == node or edge.node2 == node:
                         self.edges.remove(edge)
                         self.view.scene.removeItem(edge)
+
                 del self.directed_graph[node]
                 del self.undirected_graph[node]
-                self.view.scene.removeItem(node)
 
+                self.remove_all_connections()
+                self.view.scene.removeItem(node)
+        # Noiile noduri
         for node_text in nodes:
             node = Node(node_text, self)
-            self.directed_graph[node].clear()
-            self.undirected_graph[node].clear()
-            self.view.scene.addItem(node)
 
-        self.nodes = list(self.directed_graph.keys())
+            self.directed_graph.edges[node].clear()
+            self.undirected_graph.edges[node].clear()
+
+            self.view.scene.addItem(node)
+            self.remove_all_connections()
+
+        self.nodes = list(self.directed_graph.edges.keys())
         self.label_node_count.setText(str(len(self.nodes)))
 
     def add_remove_edges(self, edges):
+        """Adauga sau sterge muchii in functie de noile date
+
+        Interand prin muchile actuale se cauta care dintre acestea nu se afla in printre noile
+        muchii si se streg. Dupa stergerea celor neuitilizare se itereaza prin noile muchii
+        si se adauga in scene si in lisele de adiacenta.
+
+        Parametrii
+        ----------
+        edges: list
+            Lista muchilor reinnoita
+        """
+
         edge_copy = self.edges.copy()
         for edge in edge_copy:
             found = False
+
             for elem in edges:
                 n1, n2, cost = elem
+                # Daca muchia este gasita
                 if edge.node1.__repr__() == n1 and edge.node2.__repr__() == n2 and \
                         edge.cost == cost:
                     found = True
                     edges.remove(elem)
                     break
+            # Daca muchia nu este gasita se sterge
             if not found:
-                self.directed_graph[edge.node1].remove(edge.node2)
-                self.undirected_graph[edge.node1].remove(edge.node2)
-                self.undirected_graph[edge.node2].remove(edge.node1)
+                self.directed_graph.remove_edge(edge.node1, edge.node2)
+                self.undirected_graph.remove_edge(edge.node1, edge.node2)
+
                 self.view.scene.removeItem(edge)
                 self.edges.remove(edge)
-
+        # Noiile muchii
         for elem in edges:
             n1, n2, cost = elem
+
             for node in self.nodes:
                 if node.__repr__() == n1:
                     node1 = node
                 elif node.__repr__() == n2:
                     node2 = node
+
             edge = Edge(node1, node2, self, cost)
+            cost = int(cost) if cost is not None and cost.isnumeric() else None
+
+            self.directed_graph.add_edge(node1, node2, cost)
+            self.undirected_graph.add_edge(node1, node2, cost)
+
             self.edges.append(edge)
             self.view.scene.addItem(edge)
-            self.directed_graph[node1].append(node2)
-            self.undirected_graph[node1].append(node2)
-            self.undirected_graph[node2].append(node1)
 
     def update_nodes(self):
+        """Reinnoiste pozirile nodurilor
+
+        Daca modul de gravitatie nu este dezactivat se caluleaza forta de gravitatie
+        care actioneaza asuprea fiecarui nod si i se actualizeaza pozitia in funtie
+        de aceasta, dupa care se verifica coliziunea fiecarui nod.
+        """
+
         for node in self.nodes:
-            if not node.pinned:
+            if self.gravity:
                 node.force = self.forces(node)
 
-                tempPos = node.pos()
+                #tempPos = node.pos()
                 node.moveBy(node.force.x() * (dt ** 2),
                             node.force.y() * (dt ** 2))
-                node.oldPos = tempPos
+                #node.oldPos = tempPos
 
             self.check_collision(node)
 
     def draw_edges(self):
+        """Acualizeaza muchile dintre fiecare pereche de noduri
+
+        Creaza un path de la marginea cercului primului nod la marginea cercului celui
+        de-al doilea nod, in funtie daca graful este orientat sau nu.
+        """
+
         for edge in self.edges:
             dx, dy, alfa = self.get_angle(edge.node1, edge.node2)
 
@@ -166,64 +423,76 @@ class GraphEngine(object):
             end_point = QPointF(edge.node2.x() - self.node_radius * (math.cos(alfa)),
                                 edge.node2.y() - self.node_radius * (math.sin(alfa)))
 
-            control_point = QPointF(start_point.x() + (end_point.x() - start_point.x()) / 2,
-                                    start_point.y() + (end_point.y() - start_point.y()) / 2)
-
-            created_path = edge.create_path(start_point, control_point, end_point, self.directed, alfa)
+            created_path = edge.create_path(start_point, end_point, self.directed)
             edge.setPath(created_path)
 
     def update_connections(self):
+        """Actualizarea pozitilor nodurlilor in funtie de conexiunile formate
+
+        O conexiune intre noduri depinde de distanta dintre acestea
+        """
+
         for connection in self.connections:
-            node1 = connection.node1
-            node2 = connection.node2
-
-            dx, dy, angle = self.get_angle(node1, node2)
-            d = math.sqrt(dx * dx + dy * dy)
-            diff = connection.length - d
-            percent = diff / d / 2
-            offsetX = dx * percent
-            offsetY = dy * percent
-
-            if not node1.pinned:
-                node1.setPos(node1.x() - offsetX, node1.y() - offsetY)
-            if not node2.pinned:
-                node2.setPos(node2.x() + offsetX, node2.y() + offsetY)
-
-    def remove_all_connections(self):
-        self.connections.clear()
-        for node in self.nodes:
-            node.connectedTo.clear()
-
-    def remove_node_connections(self, node):
-        node.connectedTo.clear()
-        for other_node in self.nodes:
-            if node in other_node.connectedTo:
-                other_node.connectedTo.remove(node)
-
-    def find_edge(self, node1, node2):
-        for edge in self.edges:
-            if (edge.node1 == node1 and edge.node2 == node2) or \
-                    (edge.node1 == node2 and edge.node2 == node1):
-                return edge
-        return None
+            dx, dy, angle = self.get_angle(connection.node1, connection.node2)
+            connection.update(dx, dy)
+            # node1 = connection.node1
+            # node2 = connection.node2
+            #
+            # dx, dy, angle = self.get_angle(node1, node2)
+            # d = math.sqrt(dx * dx + dy * dy)
+            # diff = connection.length - d
+            # percent = diff / d * 0.5
+            # offsetX = dx * percent
+            # offsetY = dy * percent
+            #
+            # #if not node1.pinned:
+            # node1.setPos(node1.x() - offsetX, node1.y() - offsetY)
+            # #if not node2.pinned:
+            # node2.setPos(node2.x() + offsetX, node2.y() + offsetY)
 
     def forces(self, node):
-        if self.gravity:
-            dx, dy, alfa = self.get_angle(node, QPointF(self.view.width() / 2,
-                                                        self.view.height() / 2))
-            dsq = math.sqrt(dx * dx + dy * dy)
-            # dsq = self.fast_inverse_sqrt(dx * dx + dy * dy)
-            # dsq_sc = self.fast_inverse_sqrt(dsq ** -1 + SOFTENING_CONSTANT)
-            # force = (G * (dsq * dsq_sc)) ** -1
-            force = (dsq * math.sqrt(dsq + SOFTENING_CONSTANT)) / G
+        """Calularea fortei de gravitatie care actioneaza asupra nodului
 
-            force_x = float(force) * math.cos(alfa)
-            force_y = float(force) * math.sin(alfa)
+        Forta de gravitatie este invers proportioanal cu distanta dintre
+        nod si cnetrul scene-ului.
 
-            return QPointF(force_x * abs(dx), force_y * abs(dy))
-        return QPointF(0, 0)
+        Parametrii
+        ----------
+        node: Node
+            nodul pentru care se va calcula forta de gravitatie
+
+        Returneaza
+        ----------
+        force: QPointF
+            reprezinta forta de gravitatie care actioneaza asupra nodului
+            descomupsa pe cele 2 axe
+        """
+
+        dx, dy, alfa = self.get_angle(node, QPointF(self.view.width() / 2,
+                                                    self.view.height() / 2))
+        dsq = math.sqrt(dx * dx + dy * dy)
+        force = (dsq * math.sqrt(dsq + SOFTENING_CONSTANT)) / G
+
+        force_x = float(force) * math.cos(alfa)
+        force_y = float(force) * math.sin(alfa)
+
+        force = QPointF(force_x * abs(dx), force_y * abs(dy))
+        return force
 
     def check_collision(self, node):
+        """Intersectia dintre noduri
+
+        Daca distanta dintre centrele nodurilor este mai mica sau egala cu raza unui nod adunata
+        cu raza campului de interactiune inseamna ca se intersecteaza. Daca exista intersectie si
+        gravitatie acestea vor actiona unul in funtie de celalalt si vor forma o conexiune, daca
+        nu exista gravitatie si se intersecteaza (sunt mutate manual unul in celalalt), se vor respinge.
+
+        Parametrii
+        ----------
+        node: Node
+            nodul pentru care se verifica intersectiile
+        """
+
         for other_node in self.nodes:
             if other_node is not node:
 
@@ -243,69 +512,191 @@ class GraphEngine(object):
                                           0.5 * overlap * (node.y() - other_node.y()) / dsq)
 
     def get_angle(self, point1, point2):
+        """Primeste 2 pucnte si calculeaza distanta orizontala, distanta verticala si unghiul dintre
+           cele 2 pucnte
+
+        Parametrii
+        ----------
+        point1: QPointF
+            Coordonatele primului punct
+        point2: QPointF
+            Coordonatele celui de-al doilea punct
+
+        Returneaza
+        ----------
+        dx: float
+            distanta verticala
+        dy: float
+            distanta orizontala
+        angle: float
+            unghiul format de cele 2 pucnte
+        """
+
         dy = point2.y() - point1.y()
         dx = point2.x() - point1.x()
-        return dx, dy, math.atan2(dy, dx)
+        angle = math.atan2(dy, dx)
 
-    def fast_inverse_sqrt(self, number):
-        x2 = number * 0.5
-        y = c_float(number)
+        return dx, dy, angle
 
-        i = cast(byref(y), POINTER(c_int32)).contents.value
-        i = c_int32(0x5f3759df - (i >> 1))
-        y = cast(byref(i), POINTER(c_float)).contents.value
+    def find_edge(self, node1, node2):
+        """Cauta prin daca exista o muchie intre 2 noduri
 
-        y = y * (1.5 - (x2 * y * y))
-        return y
+        Parametrii
+        ----------
+        node1: Node
+            primul nod
+        node2: Node
+            al doilea nod
 
-    def start_animations(self, text_DFS, text_BFS):
-        if not text_DFS and not text_BFS:
+        Returneaza
+        ----------
+        edge: Edge
+            daca exista o muchie intre cele 2 noduri
+        None:
+            daca nu exista muchie inter cele 2 noduri
+        """
+
+        for edge in self.edges:
+            if (edge.node1 == node1 and edge.node2 == node2) or \
+                    (edge.node1 == node2 and edge.node2 == node1):
+                return edge
+        return None
+
+    def remove_all_connections(self):
+        """Sterge toate conexiunile facute intre noduri"""
+
+        self.connections.clear()
+        for node in self.nodes:
+            node.connectedTo.clear()
+
+    def start_animations(self, text_DFS, text_BFS, text_DIJKSTRA_src, text_DIJKSTRA_end):
+        """Crearea grupurilor de aniamtii corespunzatoare
+
+        Daca este pasat un argument in cel putin unul din cele 4 campuri, incepe cautarea nodurilor
+        respective textul primit, daca nodul este gasit va incepe algorimtul respectiv, implict vor
+        fi adaugate nodurile si muchile care trec prin algoritm si vor fi pornite (pe rand) animatile
+        celor 3 algoritmi.
+        """
+
+        if not (text_DFS + text_BFS + text_DIJKSTRA_src + text_DIJKSTRA_end):
             return
 
         self.DFS_sequential.clear()
         self.BFS_sequential.clear()
+        self.DIJKSTRA_sequential.clear()
 
+        node_end = None
+        node_src = None
+
+        # Lista de adiacenta pe care se vor face algoritmii este data de
+        # orientarea actuala a grafului
         adj_list = self.undirected_graph if not self.directed else self.directed_graph
         for node in self.nodes:
             if node.__repr__() == text_DFS:
                 visited = np.zeros(len(self.nodes))
                 self.DFS(node, visited, adj_list)
-            elif node.__repr__() == text_BFS:
+            if node.__repr__() == text_BFS:
                 visited = np.zeros(len(self.nodes))
                 self.BFS(node, visited, adj_list)
+            if node.__repr__() == text_DIJKSTRA_src:
+                node_src = node
+            elif node.__repr__() == text_DIJKSTRA_end:
+                node_end = node
 
-        self.DFS_sequential.start()
-        self.BFS_sequential.start()
+        if node_end and node_src:
+            self.DIJKSTRA(node_src, node_end, adj_list)
 
-    def DFS(self, start, visited, adj_list):
+        self.sequential.start()
+
+    def DFS(self, start, visited, graph):
+        """Algoritmul DFS din nodul de start pe lista de adiacenta"""
+
         visited[self.nodes.index(start)] = 1
         self.DFS_sequential.addAnimation(self.create_animation(start, start.pen.color(), DFS_COLOR))
-        for node in adj_list[start]:
+
+        for node in graph.edges[start]:
             if not visited[self.nodes.index(node)]:
                 edge = self.find_edge(start, node)
-                self.DFS_sequential.addAnimation(self.create_animation(edge, start.pen.color(), DFS_COLOR))
-                self.DFS(node, visited, adj_list)
+                self.DFS_sequential.addAnimation(self.create_animation(edge, node.pen.color(), DFS_COLOR))
+                self.DFS(node, visited, graph)
 
-    def BFS(self, start, visited, adj_list):
+    def BFS(self, start, visited, graph):
+        """Algoritmul BFS din nodul de start pe lista de adiacenta"""
+
         queue = [start]
         visited[self.nodes.index(start)] = 1
         self.BFS_sequential.addAnimation(self.create_animation(start, start.pen.color(), BFS_COLOR))
+
         while queue:
             s = queue.pop(0)
-            for node in adj_list[s]:
+            for node in graph.edges[s]:
                 node_index = self.nodes.index(node)
                 if not visited[node_index]:
-                    edge = self.find_edge(s, node)
-                    self.BFS_sequential.addAnimation(self.create_animation(edge, edge.pen().color(), BFS_COLOR))
-                    self.BFS_sequential.addAnimation(self.create_animation(node, node.pen.color(), BFS_COLOR))
                     queue.append(node)
                     visited[node_index] = 1
 
+                    edge = self.find_edge(s, node)
+                    self.BFS_sequential.addAnimation(self.create_animation(edge, edge.pen().color(), BFS_COLOR))
+                    self.BFS_sequential.addAnimation(self.create_animation(node, node.pen.color(), BFS_COLOR))
+
+    def DIJKSTRA(self, initial, end, graph):
+        """Algorimul DIJKSTRA pe lista de adiacenta
+
+        shortest_paths e un dictionar de noduri
+        ale carui valori sunt un tuple de forma
+        (nod_anterior, cost)
+        """
+
+        shortest_paths = {initial: (None, 0)}
+        current_node = initial
+        visited = set()
+
+        while current_node != end:
+            visited.add(current_node)
+            destinations = graph.edges[current_node]
+            weight_to_current_node = shortest_paths[current_node][1]
+
+            for next_node in destinations:
+                weight = graph.weights[(current_node, next_node)] + weight_to_current_node
+                if next_node not in shortest_paths:
+                    shortest_paths[next_node] = (current_node, weight)
+                else:
+                    current_shortest_weight = shortest_paths[next_node][1]
+                    if current_shortest_weight > weight:
+                        shortest_paths[next_node] = (current_node, weight)
+
+            next_destinations = {node: shortest_paths[node] for node in shortest_paths if node not in visited}
+            if not next_destinations:
+                return
+            # Nodul urmator este destinatia cu cel mai mic cost
+            current_node = min(next_destinations, key=lambda k: next_destinations[k][1])
+
+        # Se merge inapoi prin destinatii pe cel mai scurt drum
+        path = []
+        while current_node is not None:
+            path.append(current_node)
+            next_node = shortest_paths[current_node][0]
+            current_node = next_node
+
+        # Se inverseaza vectorul
+        path = path[::-1]
+
+        src_node = path[0]
+        self.DIJKSTRA_sequential.addAnimation(self.create_animation(src_node, src_node.pen.color(), DIJKSTRA_COLOR))
+
+        for node in path[1:]:
+            edge = self.find_edge(src_node, node)
+            self.DIJKSTRA_sequential.addAnimation(self.create_animation(edge, edge.pen().color(), DIJKSTRA_COLOR))
+            self.DIJKSTRA_sequential.addAnimation(self.create_animation(node, node.pen.color(), DIJKSTRA_COLOR))
+            src_node = node
+
     def create_animation(self, item, start_color, end_color):
+        """Creaza o animatie a item-ul de la culoare de start la cea de sfarsit tip de 1 secunda"""
+
         animation = QVariantAnimation()
         animation.DeletionPolicy(QVariantAnimation.DeleteWhenStopped)
 
-        animation.valueChanged.connect(item.handle_valueChanged)
+        animation.valueChanged.connect(item.handle_value_changed)
         animation.setDuration(1000)
 
         animation.setStartValue(start_color)
