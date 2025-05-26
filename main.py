@@ -15,6 +15,7 @@ from PyQt5.QtGui import QColor
 from ui_new_main import Ui_MainWindow
 from ui_splash_screen import Ui_SplashScreen
 from ui_functions import Ui_Functions
+from login_screen import LoginScreen
 
 counter = 0  # PROGRESS BAR COUNTER
 
@@ -154,7 +155,7 @@ class SplashScreen(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
-        self.main_win = MainWindow()
+        self.login_win = LoginScreen() # Instantiating LoginScreen
         self.ui = Ui_SplashScreen()
         self.ui.setupUi(self)
 
@@ -197,7 +198,7 @@ class SplashScreen(QMainWindow):
         # STOP THE TIMER
         if counter > 100:
             self.time.stop()
-            self.main_win.show()
+            self.login_win.show() # Show LoginScreen instead of MainWindow
             self.close()
 
         counter += 5
