@@ -214,7 +214,6 @@ class Ui_MainWindow(object):
         self.label_title.setText(_translate("MainWindow", "GRAPH EDITOR"))
         self.label_mode.setText(_translate("MainWindow", "DARK MODE"))
         self.pushButton_mode.setText(_translate("MainWindow", "PushButton"))
-import source_rc
 
 
 if __name__ == "__main__":

@@ -446,7 +446,6 @@ class Connection(object):
         self.length = length
 
     def update(self, dx, dy):
-        print('da')
         #node1 = connection.node1
         #node2 = connection.node2
         d = math.sqrt(dx * dx + dy * dy)

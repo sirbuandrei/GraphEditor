@@ -5,8 +5,10 @@ are o animatie de loading..., dupa terminarea animatiei
 se proneste window-ul principal ce corespunde aplicatiei
 efective.
 """
+import sys, requests, json
 
-import sys
+import firebase_admin
+from firebase_admin import credentials, auth
 
 from PyQt5.QtCore import (Qt, QEvent, QTimer)
 from PyQt5.QtWidgets import (QMainWindow, QGraphicsDropShadowEffect, QApplication)
@@ -15,9 +17,11 @@ from PyQt5.QtGui import QColor
 from ui_new_main import Ui_MainWindow
 from ui_splash_screen import Ui_SplashScreen
 from ui_functions import Ui_Functions
+from ui_login_screen import Ui_LoginScreen
 
 counter = 0  # PROGRESS BAR COUNTER
-
+KEY_PATH = r"C:\Users\andre\OneDrive\Documents\GitHub\GraphEditor\graph-editor-5e2d6-firebase-adminsdk-fbsvc-5d8d4e89a1.json"
+FIREBASE_WEB_API_KEY = 'AIzaSyDduUjffM8IBT5WT5J9z6ZLYhM9XFnz8BA'
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     """Clasa principala a aplicatiei
@@ -149,12 +153,93 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return super(MainWindow, self).eventFilter(obj, event)
 
 
+class LoginScreen(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.initialize_firebase()
+        self.ui = Ui_LoginScreen()
+        self.ui.setupUi(self)
+
+        self.ui.pushButton_login.clicked.connect(self.handle_login)
+
+    def initialize_firebase(self):
+        if not firebase_admin._apps:  # Check if Firebase is already initialized
+            try:
+                cred = credentials.Certificate(KEY_PATH)
+                firebase_admin.initialize_app(cred)
+                print("Firebase Admin SDK initialized successfully.")
+            except FileNotFoundError:
+                print(f"Error: Service account key file not found at {KEY_PATH}. Please ensure the file exists.")
+                # Optionally, disable login button or show error on UI
+                #self.ui.pushButton_login.setEnabled(False)
+                #self.ui.label_error.setText(f"Firebase Error: Key file not found.\nPlease check console.")
+            except Exception as e:
+                print(f"An error occurred during Firebase initialization: {e}")
+                # Optionally, disable login button or show error on UI
+                #self.ui.pushButton_login.setEnabled(False)
+                #self.ui.label_error.setText(f"Firebase Error: {e}\nPlease check console.")
+
+    def handle_login(self):
+        email = self.ui.lineEdit_email.text()
+        password = self.ui.lineEdit_password.text()
+
+
+        self.ui.label_error.setText("")  # Clear previous errors
+
+        if not FIREBASE_WEB_API_KEY or FIREBASE_WEB_API_KEY == "YOUR_FIREBASE_WEB_API_KEY":
+            self.ui.label_error.setText("Error: Firebase Web API Key not configured.\nPlease check login_screen.py.")
+            print(
+                "Error: FIREBASE_WEB_API_KEY is not configured in login_screen.py. Please replace 'YOUR_FIREBASE_WEB_API_KEY' with your actual key.")
+            return
+
+        rest_api_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_WEB_API_KEY}"
+        payload = {
+            'email': email,
+            'password': password,
+            'returnSecureToken': True
+        }
+
+        try:
+            response = requests.post(rest_api_url, data=json.dumps(payload),
+                                     headers={'Content-Type': 'application/json'})
+            response_data = response.json()
+
+            if response.status_code == 200:
+                id_token = response_data.get('idToken')
+                local_id = response_data.get('localId')  # User's UID
+                print(f"Login successful! User UID: {local_id}, ID Token: {id_token}")
+
+                # Proceed to main application window
+                MainWindow().show()
+                self.close()  # Close the login window
+            else:
+                error_info = response_data.get('error', {})
+                message = error_info.get('message', 'Unknown authentication error.')
+                print(f"Login failed: {message}. Full error: {response_data}")
+                self.ui.label_error.setText(f"Login Failed: {message}")
+                self.ui.lineEdit_password.setText("")  # Clear password field
+
+        except requests.exceptions.RequestException as e:
+            print(f"Network error during login: {e}")
+            self.ui.label_error.setText(f"Network error: Please check your connection.")
+            self.ui.lineEdit_password.setText("")  # Clear password field
+        except json.JSONDecodeError:
+            print(
+                f"Error decoding JSON response from Firebase. Status: {response.status_code}, Response text: {response.text}")
+            self.ui.label_error.setText("Error: Invalid response from server.")
+            self.ui.lineEdit_password.setText("")  # Clear password field
+        except Exception as e:
+            print(f"An unexpected error occurred during login: {e}")
+            self.ui.label_error.setText(f"An unexpected error occurred.")
+            self.ui.lineEdit_password.setText("")  # Clear password field
+
+
 class SplashScreen(QMainWindow):
     """SpalshScreen-ul de inceput"""
 
     def __init__(self):
         QMainWindow.__init__(self)
-        self.main_win = MainWindow()
+        self.login_win = MainWindow() # Instantiating LoginScreen
         self.ui = Ui_SplashScreen()
         self.ui.setupUi(self)
 
@@ -197,7 +282,7 @@ class SplashScreen(QMainWindow):
         # STOP THE TIMER
         if counter > 100:
             self.time.stop()
-            self.main_win.show()
+            self.login_win.show() # Show LoginScreen instead of MainWindow
             self.close()
 
         counter += 5

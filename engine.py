@@ -569,7 +569,7 @@ class GraphEngine(object):
         for node in self.nodes:
             node.connectedTo.clear()
 
-    def start_animations(self, text_DFS, text_BFS, text_DIJKSTRA_src, text_DIJKSTRA_end):
+    def start_animations(self, text_DFS, text_BFS, text_DIJKSTRA_src, text_DIJKSTRA_end, algorithm_to_get_path=""):
         """Crearea grupurilor de aniamtii corespunzatoare
 
         Daca este pasat un argument in cel putin unul din cele 4 campuri, incepe cautarea nodurilor
@@ -577,9 +577,13 @@ class GraphEngine(object):
         fi adaugate nodurile si muchile care trec prin algoritm si vor fi pornite (pe rand) animatile
         celor 3 algoritmi.
         """
+        actual_path_to_return = None
 
-        if not (text_DFS + text_BFS + text_DIJKSTRA_src + text_DIJKSTRA_end):
-            return
+        if not (text_DFS or text_BFS or text_DIJKSTRA_src or text_DIJKSTRA_end):  # if all are empty
+            if not algorithm_to_get_path:  # and no specific path is requested
+                return None  # Or an empty list, depending on desired signature for no-op
+            # If a path is requested but no start points given for that algo, handle below or return []
+            # For now, let specific algo sections handle it.
 
         self.DFS_sequential.clear()
         self.BFS_sequential.clear()
@@ -588,43 +592,74 @@ class GraphEngine(object):
         node_end = None
         node_src = None
 
-        # Lista de adiacenta pe care se vor face algoritmii este data de
-        # orientarea actuala a grafului
+        # Find src/end for Dijkstra first, as it's not tied to iterating node for start_animations's main loop logic
+        # This part is just to identify the nodes for Dijkstra if its texts are provided.
+        # The actual Dijkstra call and path retrieval will happen after the loop.
+        if text_DIJKSTRA_src or text_DIJKSTRA_end:  # Only search if Dijkstra texts are provided
+            for node in self.nodes:
+                if node.__repr__() == text_DIJKSTRA_src:
+                    node_src = node
+                if node.__repr__() == text_DIJKSTRA_end:  # Use if, not elif, as src and end can be the same node
+                    node_end = node
+
         adj_list = self.undirected_graph if not self.directed else self.directed_graph
         for node in self.nodes:
-            if node.__repr__() == text_DFS:
+            if text_DFS and node.__repr__() == text_DFS:  # Ensure text_DFS is provided
                 visited = np.zeros(len(self.nodes))
-                self.DFS(node, visited, adj_list)
-            if node.__repr__() == text_BFS:
-                visited = np.zeros(len(self.nodes))
-                self.BFS(node, visited, adj_list)
-            if node.__repr__() == text_DIJKSTRA_src:
-                node_src = node
-            elif node.__repr__() == text_DIJKSTRA_end:
-                node_end = node
+                # DFS modifies the list passed to it and also returns it.
+                # For start_animations, we want to capture this returned list if DFS is the target.
+                dfs_path_names_list = []  # Initialize a new list for this call
+                returned_dfs_path = self.DFS(node, visited, adj_list, dfs_path_names_list)
+                if algorithm_to_get_path == "DFS":
+                    actual_path_to_return = returned_dfs_path
 
-        if node_end and node_src:
-            self.DIJKSTRA(node_src, node_end, adj_list)
+            if text_BFS and node.__repr__() == text_BFS:  # Ensure text_BFS is provided
+                visited = np.zeros(len(self.nodes))
+                bfs_path_names = self.BFS(node, visited, adj_list)
+                if algorithm_to_get_path == "BFS":
+                    actual_path_to_return = bfs_path_names
+
+        # DIJKSTRA path retrieval logic
+        if text_DIJKSTRA_src and text_DIJKSTRA_end:  # Check if texts were provided
+            if node_src and node_end:  # Check if nodes were found
+                dijkstra_path_names = self.DIJKSTRA(node_src, node_end, adj_list)
+                if algorithm_to_get_path == "DIJKSTRA":
+                    actual_path_to_return = dijkstra_path_names
+            elif algorithm_to_get_path == "DIJKSTRA":  # Dijkstra requested, but src/end nodes not found or not valid
+                actual_path_to_return = []
+        elif algorithm_to_get_path == "DIJKSTRA":  # Dijkstra requested, but src/end texts were not provided
+            actual_path_to_return = []
 
         self.sequential.start()
+        return actual_path_to_return
 
-    def DFS(self, start, visited, graph):
+    def DFS(self, start, visited, graph, visited_order_names):
         """Algoritmul DFS din nodul de start pe lista de adiacenta"""
 
+        # The list `visited_order_names` is passed by reference and appended to.
+        # No need to check if it's None here if start_animations guarantees initialization.
+        # However, the original check `if not visited_order_names:` was more for standalone/robustness.
+        # Let's stick to the plan: start_animations initializes it.
+
         visited[self.nodes.index(start)] = 1
+        visited_order_names.append(start.__repr__())
         self.DFS_sequential.addAnimation(self.create_animation(start, start.pen.color(), DFS_COLOR))
 
         for node in graph.edges[start]:
             if not visited[self.nodes.index(node)]:
                 edge = self.find_edge(start, node)
                 self.DFS_sequential.addAnimation(self.create_animation(edge, node.pen.color(), DFS_COLOR))
-                self.DFS(node, visited, graph)
+                self.DFS(node, visited, graph, visited_order_names)
+
+        return visited_order_names
 
     def BFS(self, start, visited, graph):
         """Algoritmul BFS din nodul de start pe lista de adiacenta"""
 
+        visited_order_names = []
         queue = [start]
         visited[self.nodes.index(start)] = 1
+        visited_order_names.append(start.__repr__())
         self.BFS_sequential.addAnimation(self.create_animation(start, start.pen.color(), BFS_COLOR))
 
         while queue:
@@ -634,10 +669,13 @@ class GraphEngine(object):
                 if not visited[node_index]:
                     queue.append(node)
                     visited[node_index] = 1
+                    visited_order_names.append(node.__repr__())
 
                     edge = self.find_edge(s, node)
                     self.BFS_sequential.addAnimation(self.create_animation(edge, edge.pen().color(), BFS_COLOR))
                     self.BFS_sequential.addAnimation(self.create_animation(node, node.pen.color(), BFS_COLOR))
+
+        return visited_order_names
 
     def DIJKSTRA(self, initial, end, graph):
         """Algorimul DIJKSTRA pe lista de adiacenta
@@ -667,7 +705,7 @@ class GraphEngine(object):
 
             next_destinations = {node: shortest_paths[node] for node in shortest_paths if node not in visited}
             if not next_destinations:
-                return
+                return []
             # Nodul urmator este destinatia cu cel mai mic cost
             current_node = min(next_destinations, key=lambda k: next_destinations[k][1])
 
@@ -680,6 +718,10 @@ class GraphEngine(object):
 
         # Se inverseaza vectorul
         path = path[::-1]
+        path_names = [node.__repr__() for node in path]
+
+        if not path_names:  # Should not happen if next_destinations handles empty path, but as a safeguard
+            return []
 
         src_node = path[0]
         self.DIJKSTRA_sequential.addAnimation(self.create_animation(src_node, src_node.pen.color(), DIJKSTRA_COLOR))
@@ -689,6 +731,8 @@ class GraphEngine(object):
             self.DIJKSTRA_sequential.addAnimation(self.create_animation(edge, edge.pen().color(), DIJKSTRA_COLOR))
             self.DIJKSTRA_sequential.addAnimation(self.create_animation(node, node.pen.color(), DIJKSTRA_COLOR))
             src_node = node
+
+        return path_names
 
     def create_animation(self, item, start_color, end_color):
         """Creaza o animatie a item-ul de la culoare de start la cea de sfarsit tip de 1 secunda"""

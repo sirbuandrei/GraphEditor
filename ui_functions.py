@@ -2,7 +2,7 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPen
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QInputDialog, QMessageBox
 from styles import Styles
 
 
@@ -74,11 +74,63 @@ class Ui_Functions(object):
         for node in self.MainWindow.view.engine.nodes:
             node.set_radius(self.MainWindow.spinBox_node_radius.value())
 
-        text_BFS = self.MainWindow.lineEdit_BFS.text()
-        text_DFS = self.MainWindow.lineEdit_DFS.text()
-        text_DIJKSTRA_src = self.MainWindow.lineEdit_DIJKSTRA_src.text()
-        text_DIJKSTRA_end = self.MainWindow.lineEdit_DIJKSTRA_end.text()
-        self.MainWindow.view.engine.start_animations(text_DFS, text_BFS, text_DIJKSTRA_src, text_DIJKSTRA_end)
+        text_DFS = self.MainWindow.lineEdit_DFS.text().strip()
+        text_BFS = self.MainWindow.lineEdit_BFS.text().strip()
+        text_DIJKSTRA_src = self.MainWindow.lineEdit_DIJKSTRA_src.text().strip()
+        text_DIJKSTRA_end = self.MainWindow.lineEdit_DIJKSTRA_end.text().strip()
+
+        user_guess_list = None
+        algorithm_for_guess = ""
+        actual_path = None
+        prompt_title = ""
+        prompt_label = ""
+
+        num_algos_specified = 0
+        if text_DFS:
+            num_algos_specified += 1
+        if text_BFS:
+            num_algos_specified += 1
+        if text_DIJKSTRA_src and text_DIJKSTRA_end:
+            num_algos_specified += 1
+
+        if num_algos_specified == 1:
+            if text_DFS:
+                algorithm_for_guess = "DFS"
+                prompt_title = "DFS Guess"
+                prompt_label = f"Enter your DFS sequence guess for start node '{text_DFS}' (e.g., A B C):"
+            elif text_BFS:
+                algorithm_for_guess = "BFS"
+                prompt_title = "BFS Guess"
+                prompt_label = f"Enter your BFS sequence guess for start node '{text_BFS}' (e.g., A B C):"
+            elif text_DIJKSTRA_src and text_DIJKSTRA_end:
+                algorithm_for_guess = "DIJKSTRA"
+                prompt_title = "Dijkstra Guess"
+                prompt_label = f"Enter your Dijkstra path guess from '{text_DIJKSTRA_src}' to '{text_DIJKSTRA_end}' (e.g., A B C):"
+
+            if prompt_label:  # Ensure one of the conditions was met
+                text, ok = QInputDialog.getText(self.MainWindow, prompt_title, prompt_label)
+                if ok and text:
+                    user_guess_list = [node_name.strip() for node_name in text.split()]
+
+        actual_path = self.MainWindow.view.engine.start_animations(
+            text_DFS, text_BFS, text_DIJKSTRA_src, text_DIJKSTRA_end,
+            algorithm_to_get_path=algorithm_for_guess
+        )
+
+        if user_guess_list is not None and actual_path is not None:
+            is_correct = False
+            if len(user_guess_list) == len(actual_path):
+                is_correct = all(
+                    str(user_node) == str(engine_node) for user_node, engine_node in zip(user_guess_list, actual_path))
+
+            if is_correct:
+                QMessageBox.information(self.MainWindow, "Result", "You are correct!")
+            else:
+                QMessageBox.warning(self.MainWindow, "Result",
+                                    f"Wrong answer. Actual path was: {' '.join(actual_path)}")
+        elif user_guess_list is not None and actual_path is None and algorithm_for_guess:
+            QMessageBox.warning(self.MainWindow, "Result",
+                                f"Wrong answer or no path found by the algorithm. Engine returned no path.")
 
     def force_mode(self):
         """Schimba valoare modului de forte si sterge conexiunile dintre noduri sau le
