@@ -5,48 +5,235 @@ class Ui_LoginScreen(object):
     def setupUi(self, LoginScreen):
         LoginScreen.setObjectName("LoginScreen")
         LoginScreen.resize(400, 300)
-        LoginScreen.setWindowTitle("Login")
+        LoginScreen.setMinimumSize(QtCore.QSize(400, 300))
+
+        # Frameless dark window
+        LoginScreen.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        LoginScreen.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         self.centralwidget = QtWidgets.QWidget(LoginScreen)
         self.centralwidget.setObjectName("centralwidget")
+        self.centralwidget.setStyleSheet("background-color: #1e2124;")
 
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setObjectName("verticalLayout")
+        self.verticalLayout_main = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout_main.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_main.setSpacing(0)
 
-        self.lineEdit_email = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_email.setObjectName("lineEdit_email")
+        # Custom Title Bar
+        self.frame_actions_btns = QtWidgets.QFrame(self.centralwidget)
+        self.frame_actions_btns.setMinimumSize(QtCore.QSize(0, 25))
+        self.frame_actions_btns.setMaximumSize(QtCore.QSize(16777215, 25))
+        self.frame_actions_btns.setStyleSheet("background-color: transparent;")
+        self.frame_actions_btns.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_actions_btns.setFrameShadow(QtWidgets.QFrame.Raised)
+
+        self.horizontalLayout_actions = QtWidgets.QHBoxLayout(self.frame_actions_btns)
+        self.horizontalLayout_actions.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_actions.setSpacing(0)
+
+        spacer = QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_actions.addItem(spacer)
+
+        self.frame_btns = QtWidgets.QFrame(self.frame_actions_btns)
+        self.frame_btns.setMinimumSize(QtCore.QSize(75, 25))
+        self.frame_btns.setMaximumSize(QtCore.QSize(75, 25))
+        self.frame_btns.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_btns.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.horizontalLayout_btns = QtWidgets.QHBoxLayout(self.frame_btns)
+        self.horizontalLayout_btns.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_btns.setSpacing(0)
+
+        self.pushButton_minimize = QtWidgets.QPushButton(self.frame_btns)
+        self.pushButton_minimize.setIcon(QtGui.QIcon("icons/cil-minus.png"))
+        self.pushButton_minimize.setMinimumSize(QtCore.QSize(25, 25))
+        self.pushButton_minimize.setMaximumSize(QtCore.QSize(25, 25))
+        self.pushButton_minimize.setStyleSheet("""
+            QPushButton { background-color: transparent; border: none; }
+            QPushButton:hover { background-color: rgb(55, 56, 59); }
+            QPushButton:pressed { background-color: rgb(86, 87, 89); }
+        """)
+        self.horizontalLayout_btns.addWidget(self.pushButton_minimize)
+
+        self.pushButton_maximize = QtWidgets.QPushButton(self.frame_btns)
+        self.pushButton_maximize.setIcon(QtGui.QIcon("icons/cil-window-maximize.png"))
+        self.pushButton_maximize.setMinimumSize(QtCore.QSize(24, 24))
+        self.pushButton_maximize.setMaximumSize(QtCore.QSize(24, 24))
+        self.pushButton_maximize.setStyleSheet("""
+            QPushButton { background-color: transparent; border: none; }
+            QPushButton:hover { background-color: rgb(55, 56, 59); }
+            QPushButton:pressed { background-color: rgb(86, 87, 89); }
+        """)
+        self.horizontalLayout_btns.addWidget(self.pushButton_maximize)
+
+        self.pushButton_close = QtWidgets.QPushButton(self.frame_btns)
+        self.pushButton_close.setIcon(QtGui.QIcon("icons/cil-x.png"))
+        self.pushButton_close.setMinimumSize(QtCore.QSize(25, 25))
+        self.pushButton_close.setMaximumSize(QtCore.QSize(25, 25))
+        self.pushButton_close.setStyleSheet("""
+            QPushButton { background-color: transparent; border: none; }
+            QPushButton:hover { background-color: red; }
+            QPushButton:pressed { background-color: rgb(148, 52, 52); }
+        """)
+        self.horizontalLayout_btns.addWidget(self.pushButton_close)
+
+        self.horizontalLayout_actions.addWidget(self.frame_btns)
+        self.verticalLayout_main.addWidget(self.frame_actions_btns)
+
+        # Login Form Frame (light grey container)
+        self.dropShadowFrame = QtWidgets.QFrame(self.centralwidget)
+        self.dropShadowFrame.setStyleSheet("""
+            QFrame {
+                background-color: #63676e;
+                border-radius: 15px;
+            }
+        """)
+        self.dropShadowFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.dropShadowFrame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.dropShadowFrame.setMinimumSize(QtCore.QSize(280, 250))
+        self.dropShadowFrame.setMaximumSize(QtCore.QSize(400, 350))
+        self.dropShadowFrame.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.dropShadowFrame)
+        self.verticalLayout.setSpacing(15)
+        self.verticalLayout.setContentsMargins(30, 30, 30, 30)
+
+        self.lineEdit_email = QtWidgets.QLineEdit(self.dropShadowFrame)
         self.lineEdit_email.setPlaceholderText("Email")
+        self.lineEdit_email.setStyleSheet("""
+            QLineEdit {
+                background-color: transparent;
+                border: none;
+                border-bottom: 2px solid white;
+                color: white;
+                font: 63 14pt "Segoe UI Semibold";
+            }
+        """)
         self.verticalLayout.addWidget(self.lineEdit_email)
 
-        self.lineEdit_password = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_password.setObjectName("lineEdit_password")
+        self.lineEdit_password = QtWidgets.QLineEdit(self.dropShadowFrame)
         self.lineEdit_password.setPlaceholderText("Password")
         self.lineEdit_password.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.lineEdit_password.setStyleSheet("""
+            QLineEdit {
+                background-color: transparent;
+                border: none;
+                border-bottom: 2px solid white;
+                color: white;
+                font: 63 14pt "Segoe UI Semibold";
+            }
+        """)
         self.verticalLayout.addWidget(self.lineEdit_password)
 
-        self.pushButton_login = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_login.setObjectName("pushButton_login")
+        # Login Button
+        self.pushButton_login = QtWidgets.QPushButton(self.dropShadowFrame)
+        self.pushButton_login.setText("Login")
+        self.pushButton_login.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_login.setIcon(QtGui.QIcon("icons/cil-login.png"))
+        self.pushButton_login.setIconSize(QtCore.QSize(20, 20))
+        self.pushButton_login.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border-radius: 10px;
+                color: white;
+                font: 63 14pt "Segoe UI Semibold";
+            }
+            QPushButton:hover {
+                background-color: rgb(44, 47, 51);
+            }
+            QPushButton:pressed {
+                background-color: rgb(66, 69, 74);
+            }
+        """)
         self.verticalLayout.addWidget(self.pushButton_login)
 
-        self.label_error = QtWidgets.QLabel(self.centralwidget)
-        self.label_error.setObjectName("label_error")
-        self.label_error.setText("")  # Initially empty
-        self.label_error.setStyleSheet("color: red")  # Style for error messages
+        # Register Button
+        self.pushButton_register = QtWidgets.QPushButton(self.dropShadowFrame)
+        self.pushButton_register.setText("Register")
+        self.pushButton_register.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_register.setIcon(QtGui.QIcon("icons/cil-register.png"))
+        self.pushButton_register.setIconSize(QtCore.QSize(20, 20))
+        self.pushButton_register.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border-radius: 10px;
+                color: white;
+                font: 63 14pt "Segoe UI Semibold";
+            }
+            QPushButton:hover {
+                background-color: rgb(44, 47, 51);
+            }
+            QPushButton:pressed {
+                background-color: rgb(66, 69, 74);
+            }
+        """)
+        self.verticalLayout.addWidget(self.pushButton_register)
+
+        self.label_error = QtWidgets.QLabel(self.dropShadowFrame)
+        self.label_error.setText("")
+        self.label_error.setStyleSheet("color: red; font: 10pt 'Segoe UI';")
+        self.label_error.setAlignment(QtCore.Qt.AlignCenter)
         self.verticalLayout.addWidget(self.label_error)
 
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
+        # Center the login frame in both directions
+        self.wrapper_layout = QtWidgets.QVBoxLayout()
+        self.wrapper_layout.setContentsMargins(0, 0, 0, 0)
+        self.wrapper_layout.setSpacing(0)
 
+        spacer_top = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacer_bottom = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.wrapper_layout.addItem(spacer_top)
+
+        horizontal_wrapper = QtWidgets.QHBoxLayout()
+        horizontal_wrapper.setContentsMargins(0, 0, 0, 0)
+        horizontal_wrapper.setSpacing(0)
+        spacer_left = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacer_right = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        horizontal_wrapper.addItem(spacer_left)
+        horizontal_wrapper.addWidget(self.dropShadowFrame, stretch=1)
+        horizontal_wrapper.addItem(spacer_right)
+
+        self.wrapper_layout.addLayout(horizontal_wrapper)
+        self.wrapper_layout.addItem(spacer_bottom)
+
+        self.verticalLayout_main.addLayout(self.wrapper_layout)
         LoginScreen.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(LoginScreen)
         QtCore.QMetaObject.connectSlotsByName(LoginScreen)
 
+        # Button behaviors
+        self.pushButton_close.clicked.connect(LoginScreen.close)
+        self.pushButton_minimize.clicked.connect(LoginScreen.showMinimized)
+        self.pushButton_maximize.clicked.connect(self.toggle_max_restore)
+
+        self.is_maximized = False
+        self.LoginScreen = LoginScreen
+
+        self.old_pos = None
+        self.frame_actions_btns.mousePressEvent = self.mouse_press_event
+        self.frame_actions_btns.mouseMoveEvent = self.mouse_move_event
+
+    def toggle_max_restore(self):
+        if self.is_maximized:
+            self.LoginScreen.showNormal()
+            self.is_maximized = False
+        else:
+            self.LoginScreen.showMaximized()
+            self.is_maximized = True
+
+    def mouse_press_event(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            self.old_pos = event.globalPos()
+
+    def mouse_move_event(self, event):
+        if self.old_pos:
+            delta = event.globalPos() - self.old_pos
+            self.LoginScreen.move(self.LoginScreen.pos() + delta)
+            self.old_pos = event.globalPos()
+
     def retranslateUi(self, LoginScreen):
         _translate = QtCore.QCoreApplication.translate
         LoginScreen.setWindowTitle(_translate("LoginScreen", "Login"))
-        self.pushButton_login.setText(_translate("LoginScreen", "Login"))
-        # self.label_error text will be set dynamically
 
 
 if __name__ == "__main__":

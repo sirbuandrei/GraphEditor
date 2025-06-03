@@ -8,7 +8,7 @@ from ui_login_screen import Ui_LoginScreen
 import firebase_admin
 from firebase_admin import credentials, auth
 
-KEY_PATH = r"C:\Users\andre\OneDrive\Documents\GitHub\GraphEditor\graph-editor-5e2d6-firebase-adminsdk-fbsvc-5d8d4e89a1.json"
+KEY_PATH = r"/FirebaseKey/graph-editor-5e2d6-firebase-adminsdk-fbsvc-5d8d4e89a1.json"
 # IMPORTANT: Replace "YOUR_FIREBASE_WEB_API_KEY" with your actual Firebase Web API Key.
 # You can find this in your Firebase project settings: Project settings > General > Your apps > Web API Key.
 FIREBASE_WEB_API_KEY = "AIzaSyDduUjffM8IBT5WT5J9z6ZLYhM9XFnz8BA"

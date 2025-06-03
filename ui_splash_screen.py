@@ -20,7 +20,7 @@ class Ui_SplashScreen(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.dropShadowFrame = QtWidgets.QFrame(self.centralwidget)
         self.dropShadowFrame.setStyleSheet("QFrame{\n"
-                                           "    background-color: #23272a;\n"
+                                           "    background-color: #1e2124;\n"
                                            "    border-radius: 15px;\n"
                                            "}")
         self.dropShadowFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)

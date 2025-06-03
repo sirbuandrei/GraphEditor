@@ -20,7 +20,7 @@ from ui_functions import Ui_Functions
 from ui_login_screen import Ui_LoginScreen
 
 counter = 0  # PROGRESS BAR COUNTER
-KEY_PATH = r"C:\Users\andre\OneDrive\Documents\GitHub\GraphEditor\graph-editor-5e2d6-firebase-adminsdk-fbsvc-5d8d4e89a1.json"
+KEY_PATH = r"C:\Users\andre\OneDrive\Documents\GitHub\GraphEditor\FirebaseKey\graph-editor-5e2d6-firebase-adminsdk-fbsvc-5d8d4e89a1.json"
 FIREBASE_WEB_API_KEY = 'AIzaSyDduUjffM8IBT5WT5J9z6ZLYhM9XFnz8BA'
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -45,8 +45,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         manipuleaza eventurile aplicatiei
     """
 
-    def __init__(self):
+    def __init__(self, user_uid=None):
         super(MainWindow, self).__init__()
+        self.user_uid = user_uid
         self.setupUi(self)
         self.functions = Ui_Functions(self)
         self.setup_ui_functions()
@@ -65,10 +66,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_minimize.clicked.connect(lambda: self.showMinimized())
         self.pushButton_maximize.clicked.connect(self.functions.maximize_restore)
         self.pushButton_mode.clicked.connect(self.functions.change_theme)
-        self.pushButton_settings.clicked.connect(self.functions.settings_page)
+        self.pushButton_settings.clicked.connect(self.functions.show_settings_page)
         self.pushButton_run_commands.clicked.connect(self.functions.run_commands)
         self.pushButton_save_graph.clicked.connect(self.functions.save_graph)
+        self.pushButton_leaderboard.clicked.connect(self.functions.show_leaderboard_page)
         self.pushButton_force_mode.clicked.connect(self.functions.force_mode)
+        self.pushButton_home.clicked.connect(self.functions.show_home_page)
         self.pushButton_directed.clicked.connect(self.functions.select_directed)
         self.pushButton_undirected.clicked.connect(self.functions.select_undirected)
         self.pushButton_clear_DFS.clicked.connect(self.functions.DFS_clear)
@@ -159,8 +162,8 @@ class LoginScreen(QMainWindow):
         self.initialize_firebase()
         self.ui = Ui_LoginScreen()
         self.ui.setupUi(self)
-
         self.ui.pushButton_login.clicked.connect(self.handle_login)
+        self.ui.pushButton_register.clicked.connect(self.handle_register)
 
     def initialize_firebase(self):
         if not firebase_admin._apps:  # Check if Firebase is already initialized
@@ -210,7 +213,7 @@ class LoginScreen(QMainWindow):
                 print(f"Login successful! User UID: {local_id}, ID Token: {id_token}")
 
                 # Proceed to main application window
-                MainWindow().show()
+                MainWindow(local_id).show()
                 self.close()  # Close the login window
             else:
                 error_info = response_data.get('error', {})
@@ -233,13 +236,67 @@ class LoginScreen(QMainWindow):
             self.ui.label_error.setText(f"An unexpected error occurred.")
             self.ui.lineEdit_password.setText("")  # Clear password field
 
+    def handle_register(self):
+        email = self.ui.lineEdit_email.text()
+        password = self.ui.lineEdit_password.text()
+        self.ui.label_error.setText("")  # Clear previous errors
+
+        if not FIREBASE_WEB_API_KEY or FIREBASE_WEB_API_KEY == "YOUR_FIREBASE_WEB_API_KEY":
+            self.ui.label_error.setText("Error: Firebase Web API Key not configured.\nPlease check login_screen.py.")
+            print(
+                "Error: FIREBASE_WEB_API_KEY is not configured in login_screen.py. Please replace it with your actual key.")
+            return
+
+        if not email or not password:
+            self.ui.label_error.setText("Email and password cannot be empty.")
+            return
+
+        if len(password) < 6:
+            self.ui.label_error.setText("Password must be at least 6 characters.")
+            return
+
+        rest_api_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={FIREBASE_WEB_API_KEY}"
+        payload = {
+            'email': email,
+            'password': password,
+            'returnSecureToken': True
+        }
+
+        try:
+            response = requests.post(rest_api_url, data=json.dumps(payload),
+                                     headers={'Content-Type': 'application/json'})
+            response_data = response.json()
+
+            if response.status_code == 200:
+                local_id = response_data.get('localId')
+                print(f"Registration successful! User UID: {local_id}")
+                self.ui.label_error.setStyleSheet("color: lightgreen; font: 10pt 'Segoe UI';")
+                self.ui.label_error.setText("Registration successful! You can now log in.")
+                self.ui.lineEdit_password.setText("")  # Clear password field
+            else:
+                error_info = response_data.get('error', {})
+                message = error_info.get('message', 'Unknown registration error.')
+                print(f"Registration failed: {message}")
+                self.ui.label_error.setStyleSheet("color: red; font: 10pt 'Segoe UI';")
+                self.ui.label_error.setText(f"Registration Failed: {message}")
+                self.ui.lineEdit_password.setText("")
+
+        except requests.exceptions.RequestException as e:
+            print(f"Network error during registration: {e}")
+            self.ui.label_error.setText("Network error: Please check your connection.")
+            self.ui.lineEdit_password.setText("")
+        except Exception as e:
+            print(f"Unexpected error during registration: {e}")
+            self.ui.label_error.setText("Unexpected error occurred.")
+            self.ui.lineEdit_password.setText("")
+
 
 class SplashScreen(QMainWindow):
     """SpalshScreen-ul de inceput"""
 
     def __init__(self):
         QMainWindow.__init__(self)
-        self.login_win = MainWindow() # Instantiating LoginScreen
+        self.login_win = LoginScreen() # Instantiating LoginScreen
         self.ui = Ui_SplashScreen()
         self.ui.setupUi(self)
 
@@ -269,7 +326,7 @@ class SplashScreen(QMainWindow):
         # PROGRESS BAR TIMER
         self.time = QTimer()
         self.time.timeout.connect(self.progress)
-        self.time.start(35)
+        self.time.start(75)
 
         self.show()
 

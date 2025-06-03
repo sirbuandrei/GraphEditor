@@ -1,4 +1,5 @@
 """Fisierul contine clasele corespunzaotare engin-ului aplicatiei"""
+from PyQt5 import QtWidgets, QtGui
 
 from node import Node, Connection, Edge
 
@@ -579,9 +580,9 @@ class GraphEngine(object):
         """
         actual_path_to_return = None
 
-        if not (text_DFS or text_BFS or text_DIJKSTRA_src or text_DIJKSTRA_end):  # if all are empty
-            if not algorithm_to_get_path:  # and no specific path is requested
-                return None  # Or an empty list, depending on desired signature for no-op
+        if not (text_DFS or text_BFS or text_DIJKSTRA_src or text_DIJKSTRA_end): # if all are empty
+            if not algorithm_to_get_path: # and no specific path is requested
+                 return None # Or an empty list, depending on desired signature for no-op
             # If a path is requested but no start points given for that algo, handle below or return []
             # For now, let specific algo sections handle it.
 
@@ -595,40 +596,41 @@ class GraphEngine(object):
         # Find src/end for Dijkstra first, as it's not tied to iterating node for start_animations's main loop logic
         # This part is just to identify the nodes for Dijkstra if its texts are provided.
         # The actual Dijkstra call and path retrieval will happen after the loop.
-        if text_DIJKSTRA_src or text_DIJKSTRA_end:  # Only search if Dijkstra texts are provided
+        if text_DIJKSTRA_src or text_DIJKSTRA_end: # Only search if Dijkstra texts are provided
             for node in self.nodes:
                 if node.__repr__() == text_DIJKSTRA_src:
                     node_src = node
-                if node.__repr__() == text_DIJKSTRA_end:  # Use if, not elif, as src and end can be the same node
+                if node.__repr__() == text_DIJKSTRA_end: # Use if, not elif, as src and end can be the same node
                     node_end = node
 
         adj_list = self.undirected_graph if not self.directed else self.directed_graph
         for node in self.nodes:
-            if text_DFS and node.__repr__() == text_DFS:  # Ensure text_DFS is provided
+            if text_DFS and node.__repr__() == text_DFS: # Ensure text_DFS is provided
                 visited = np.zeros(len(self.nodes))
                 # DFS modifies the list passed to it and also returns it.
                 # For start_animations, we want to capture this returned list if DFS is the target.
-                dfs_path_names_list = []  # Initialize a new list for this call
+                dfs_path_names_list = [] # Initialize a new list for this call
                 returned_dfs_path = self.DFS(node, visited, adj_list, dfs_path_names_list)
                 if algorithm_to_get_path == "DFS":
                     actual_path_to_return = returned_dfs_path
 
-            if text_BFS and node.__repr__() == text_BFS:  # Ensure text_BFS is provided
+            if text_BFS and node.__repr__() == text_BFS: # Ensure text_BFS is provided
                 visited = np.zeros(len(self.nodes))
                 bfs_path_names = self.BFS(node, visited, adj_list)
                 if algorithm_to_get_path == "BFS":
                     actual_path_to_return = bfs_path_names
 
         # DIJKSTRA path retrieval logic
-        if text_DIJKSTRA_src and text_DIJKSTRA_end:  # Check if texts were provided
-            if node_src and node_end:  # Check if nodes were found
+        if text_DIJKSTRA_src and text_DIJKSTRA_end: # Check if texts were provided
+            if node_src and node_end: # Check if nodes were found
                 dijkstra_path_names = self.DIJKSTRA(node_src, node_end, adj_list)
                 if algorithm_to_get_path == "DIJKSTRA":
                     actual_path_to_return = dijkstra_path_names
-            elif algorithm_to_get_path == "DIJKSTRA":  # Dijkstra requested, but src/end nodes not found or not valid
+            elif algorithm_to_get_path == "DIJKSTRA": # Dijkstra requested, but src/end nodes not found or not valid
                 actual_path_to_return = []
-        elif algorithm_to_get_path == "DIJKSTRA":  # Dijkstra requested, but src/end texts were not provided
-            actual_path_to_return = []
+        elif algorithm_to_get_path == "DIJKSTRA": # Dijkstra requested, but src/end texts were not provided
+             actual_path_to_return = []
+
 
         self.sequential.start()
         return actual_path_to_return
@@ -720,7 +722,7 @@ class GraphEngine(object):
         path = path[::-1]
         path_names = [node.__repr__() for node in path]
 
-        if not path_names:  # Should not happen if next_destinations handles empty path, but as a safeguard
+        if not path_names: # Should not happen if next_destinations handles empty path, but as a safeguard
             return []
 
         src_node = path[0]
@@ -747,3 +749,30 @@ class GraphEngine(object):
         animation.setEndValue(end_color)
 
         return animation
+
+    def show_result_text(self, message, color):
+        # Remove any existing result text item
+
+        for item in self.view.scene.items():
+            if isinstance(item, QtWidgets.QGraphicsTextItem) and item.data(0) == "result_message":
+                self.view.scene.removeItem(item)
+
+        text_item = QtWidgets.QGraphicsTextItem(message)
+        text_item.setDefaultTextColor(QtGui.QColor(color))
+        font = QtGui.QFont("Segoe UI", 13, QtGui.QFont.Bold)
+        text_item.setFont(font)
+
+        text_item.setData(0, "result_message")  # Tag to find/remove later
+
+        # Position at top center of the scene
+        scene_rect = self.view.scene.sceneRect()
+        text_width = text_item.boundingRect().width()
+        text_item.setPos((scene_rect.width() - text_width) / 2, 10)
+
+        self.view.scene.addItem(text_item)
+
+    def clear_result_text(self):
+        for item in self.view.scene.items():
+            if isinstance(item, QtWidgets.QGraphicsTextItem) and item.data(0) == "result_message":
+                self.view.scene.removeItem(item)
+                break

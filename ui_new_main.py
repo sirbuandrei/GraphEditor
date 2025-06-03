@@ -88,15 +88,36 @@ class Ui_MainWindow(object):
         self.frame_settings.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_settings.setObjectName("frame_settings")
         self.pushButton_settings = QtWidgets.QPushButton(self.frame_settings)
-        self.pushButton_settings.setGeometry(QtCore.QRect(0, 0, 50, 50))
+        self.pushButton_settings.setGeometry(QtCore.QRect(50, 0, 50, 50))
         self.pushButton_settings.setMinimumSize(QtCore.QSize(50, 50))
         self.pushButton_settings.setMaximumSize(QtCore.QSize(50, 50))
         self.pushButton_settings.setStyleSheet("QPushButton{\n    background-color: transparent;\n    border-radius: 10px;\n}\nQPushButton::hover{\n    background-color: rgb(44, 47, 51);\n}")
         self.pushButton_settings.setText("")
-        self.pushButton_settings.setIcon(QtGui.QIcon("icons/cil-settings.png"))
+        self.pushButton_settings.setIcon(QtGui.QIcon("icons/cil-terminal.png"))
         self.pushButton_settings.setIconSize(QtCore.QSize(35, 35))
         self.pushButton_settings.setObjectName("pushButton_settings")
         self.horizontalLayout_4.addWidget(self.frame_settings)
+        self.pushButton_leaderboard = QtWidgets.QPushButton(self.frame_settings)
+        self.pushButton_leaderboard.setGeometry(QtCore.QRect(100, 0, 50, 50))
+        self.pushButton_leaderboard.setMinimumSize(QtCore.QSize(50, 50))
+        self.pushButton_leaderboard.setMaximumSize(QtCore.QSize(50, 50))
+        self.pushButton_leaderboard.setStyleSheet("QPushButton{\n    background-color: transparent;\n    border-radius: 10px;\n}\nQPushButton::hover{\n    background-color: rgb(44, 47, 51);\n}")
+        self.pushButton_leaderboard.setText("")
+        self.pushButton_leaderboard.setIcon(QtGui.QIcon("icons/cil-leaderboard.png"))
+        self.pushButton_leaderboard.setIconSize(QtCore.QSize(30, 35))
+        self.pushButton_leaderboard.setObjectName("pushButton_leaderboard")
+
+        self.pushButton_home = QtWidgets.QPushButton(self.frame_settings)
+        self.pushButton_home.setGeometry(QtCore.QRect(0, 0, 50, 50))
+        self.pushButton_home.setMinimumSize(QtCore.QSize(50, 50))
+        self.pushButton_home.setMaximumSize(QtCore.QSize(50, 50))
+        self.pushButton_home.setStyleSheet("QPushButton{\n    background-color: transparent;\n    border-radius: 10px;\n}\nQPushButton::hover{\n    background-color: rgb(44, 47, 51);\n}")
+        self.pushButton_home.setText("")
+        self.pushButton_home.setIcon(QtGui.QIcon("icons/cil-home.png"))
+        self.pushButton_home.setIconSize(QtCore.QSize(30, 30))
+        self.pushButton_home.setObjectName("pushButton_home")
+
+        #self.horizontalLayout_4.addWidget(self.frame_settings)
         self.frame_title = QtWidgets.QFrame(self.frame_central_top)
         self.frame_title.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_title.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -164,6 +185,93 @@ class Ui_MainWindow(object):
         self.frame_change_settings.setObjectName("frame_change_settings")
         self.verticalLayout_0 = QtWidgets.QVBoxLayout(self.frame_change_settings)
         self.verticalLayout_0.setObjectName("verticalLayout_0")
+
+        # Create leaderboard container frame (matches frame_change_settings)
+        self.frame_leaderboard = QtWidgets.QFrame(self.frame_container)
+        self.frame_leaderboard.setMinimumSize(QtCore.QSize(250, 0))
+        self.frame_leaderboard.setMaximumSize(QtCore.QSize(250, 16777215))
+        self.frame_leaderboard.setStyleSheet("""
+            QFrame {
+                background-color: #63676e;
+                border-radius: 15px;
+            }
+        """)
+        self.frame_leaderboard.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_leaderboard.setFrameShadow(QtWidgets.QFrame.Raised)
+
+        # Layout inside leaderboard frame
+        self.verticalLayout_leaderboard = QtWidgets.QVBoxLayout(self.frame_leaderboard)
+        self.verticalLayout_leaderboard.setContentsMargins(10, 10, 10, 10)
+
+        # Table widget
+        self.tableWidget_leaderboard = QtWidgets.QTableWidget(self.frame_leaderboard)
+        self.tableWidget_leaderboard.setColumnCount(2)
+        self.tableWidget_leaderboard.setHorizontalHeaderLabels(["Email", "Points"])
+        self.tableWidget_leaderboard.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tableWidget_leaderboard.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.tableWidget_leaderboard.setShowGrid(False)
+
+        # Stretch last column
+        self.tableWidget_leaderboard.horizontalHeader().setStretchLastSection(True)
+
+        # Make table + header transparent
+        self.tableWidget_leaderboard.setStyleSheet("""
+            QTableWidget {
+                background-color: transparent;
+                color: white;
+                border: none;
+                font: 12pt 'Segoe UI';
+                selection-background-color: #7289da;
+                selection-color: white;
+            }
+            QHeaderView::section {
+                background-color: transparent;
+                color: white;
+                padding: 6px;
+                border: none;
+                font-weight: bold;
+            }
+            QTableCornerButton::section {
+                background-color: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background: transparent;
+                width: 12px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #7289da;
+                border-radius: 6px;
+            }
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                background: none;
+                height: 0px;
+            }
+            QScrollBar:horizontal {
+                background: transparent;
+                height: 12px;
+                margin: 0px;
+            }
+            QScrollBar::handle:horizontal {
+                background: #7289da;
+                border-radius: 6px;
+            }
+            QScrollBar::add-line:horizontal,
+            QScrollBar::sub-line:horizontal {
+                background: none;
+                width: 0px;
+            }
+        """)
+
+        # Add table to frame
+        self.verticalLayout_leaderboard.addWidget(self.tableWidget_leaderboard)
+
+        # Add to layout (but keep it hidden by default)
+        self.horizontalLayout_9.addWidget(self.frame_leaderboard)
+        self.frame_leaderboard.hide()
+
         self.frame_force_mode = QtWidgets.QFrame(self.frame_change_settings)
         self.frame_force_mode.setMinimumSize(QtCore.QSize(0, 50))
         self.frame_force_mode.setMaximumSize(QtCore.QSize(16777215, 50))
