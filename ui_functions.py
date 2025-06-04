@@ -10,7 +10,7 @@ from styles import Styles
 import firebase_admin
 from firebase_admin import firestore, auth
 
-
+from user_algorithm_dialog import UserAlgorithmDialog
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -450,7 +450,7 @@ class Ui_Functions(object):
                     str(user_node) == str(engine_node) for user_node, engine_node in zip(user_guess_list, actual_path))
 
             if is_correct:
-                print("intra")
+                self.award_point(self.MainWindow.user_uid)
                 self.MainWindow.view.engine.show_result_text("Correct!", "#00ff66")
             else:
                 actual = ' '.join(actual_path)
@@ -496,6 +496,10 @@ class Ui_Functions(object):
             print(f"An error occurred while awarding point to {user_uid}: {e}")
             # Optionally, inform the user if the score update failed.
             # QMessageBox.critical(self.MainWindow, "Score Update Failed", f"Could not save your new score due to an error: {e}")
+
+    def run_custom_algorithm(self):
+        print("Show custom algorithm dialog")
+        UserAlgorithmDialog(self.MainWindow).exec_()
 
     def force_mode(self):
         """Schimba valoare modului de forte si sterge conexiunile dintre noduri sau le

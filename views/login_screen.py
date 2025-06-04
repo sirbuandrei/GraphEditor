@@ -1,17 +1,29 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QMainWindow
 
 
-class Ui_LoginScreen(object):
-    def setupUi(self, LoginScreen):
-        LoginScreen.setObjectName("LoginScreen")
-        LoginScreen.resize(400, 300)
-        LoginScreen.setMinimumSize(QtCore.QSize(400, 300))
+class LoginScreen(QMainWindow):
+    login_attempt = pyqtSignal(str, str)
+    register_attempt = pyqtSignal(str, str)
+
+    def __init__(self):
+        super().__init__()
+        self.setup_ui()
+        self.pushButton_login.clicked.connect(self._on_login_clicked)
+        self.pushButton_register.clicked.connect(self._on_register_clicked)
+        self.show()
+    
+    def setup_ui(self):
+        self.setObjectName("self")
+        self.resize(400, 300)
+        self.setMinimumSize(QtCore.QSize(400, 300))
 
         # Frameless dark window
-        LoginScreen.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        LoginScreen.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
-        self.centralwidget = QtWidgets.QWidget(LoginScreen)
+        self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
         self.centralwidget.setStyleSheet("background-color: #1e2124;")
 
@@ -196,29 +208,39 @@ class Ui_LoginScreen(object):
         self.wrapper_layout.addItem(spacer_bottom)
 
         self.verticalLayout_main.addLayout(self.wrapper_layout)
-        LoginScreen.setCentralWidget(self.centralwidget)
+        self.setCentralWidget(self.centralwidget)
 
-        self.retranslateUi(LoginScreen)
-        QtCore.QMetaObject.connectSlotsByName(LoginScreen)
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
 
         # Button behaviors
-        self.pushButton_close.clicked.connect(LoginScreen.close)
-        self.pushButton_minimize.clicked.connect(LoginScreen.showMinimized)
+        self.pushButton_close.clicked.connect(self.close)
+        self.pushButton_minimize.clicked.connect(self.showMinimized)
         self.pushButton_maximize.clicked.connect(self.toggle_max_restore)
 
         self.is_maximized = False
-        self.LoginScreen = LoginScreen
+        self.self = self
 
         self.old_pos = None
         self.frame_actions_btns.mousePressEvent = self.mouse_press_event
         self.frame_actions_btns.mouseMoveEvent = self.mouse_move_event
 
+    def _on_login_clicked(self):
+        email = self.lineEdit_email.text()
+        password = self.lineEdit_password.text()
+        self.login_attempt.emit(email, password)
+
+    def _on_register_clicked(self):
+        email = self.lineEdit_email.text()
+        password = self.lineEdit_password.text()
+        self.register_attempt.emit(email, password)
+
     def toggle_max_restore(self):
         if self.is_maximized:
-            self.LoginScreen.showNormal()
+            self.self.showNormal()
             self.is_maximized = False
         else:
-            self.LoginScreen.showMaximized()
+            self.self.showMaximized()
             self.is_maximized = True
 
     def mouse_press_event(self, event):
@@ -228,9 +250,9 @@ class Ui_LoginScreen(object):
     def mouse_move_event(self, event):
         if self.old_pos:
             delta = event.globalPos() - self.old_pos
-            self.LoginScreen.move(self.LoginScreen.pos() + delta)
+            self.self.move(self.self.pos() + delta)
             self.old_pos = event.globalPos()
 
-    def retranslateUi(self, LoginScreen):
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        LoginScreen.setWindowTitle(_translate("LoginScreen", "Login"))
+        self.setWindowTitle(_translate("self", "Login"))

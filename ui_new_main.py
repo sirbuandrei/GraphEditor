@@ -467,6 +467,21 @@ class Ui_MainWindow(object):
         self.pushButton_run_commands.setStyleSheet("QPushButton{\n    background-color: transparent;\n    border-radius: 10px;\n    color: white;\n}\nQPushButton::hover{\n    background-color: rgb(44, 47, 51);\n}QPushButton::pressed{\n    background-color: rgb(66, 69, 74);\n}")
         self.pushButton_run_commands.setObjectName("pushButton_run_commands")
         self.verticalLayout_0.addWidget(self.pushButton_run_commands)
+
+        self.pushButton_user_algorithm = QtWidgets.QPushButton(self.frame_change_settings)
+        self.pushButton_user_algorithm.setMinimumSize(QtCore.QSize(0, 30))
+        self.pushButton_user_algorithm.setMaximumSize(QtCore.QSize(16777215, 30))
+        font = QtGui.QFont()
+        font.setFamily("Happy School")
+        font.setPointSize(14)
+        self.pushButton_user_algorithm.setFont(font)
+        self.pushButton_user_algorithm.setIcon(QtGui.QIcon("icons/cil-terminal.png")) # Optional: Add an icon
+        self.pushButton_user_algorithm.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.pushButton_user_algorithm.setStyleSheet(
+            "QPushButton{\n    background-color: transparent;\n    border-radius: 10px;\n    color: white;\n}\nQPushButton::hover{\n    background-color: rgb(44, 47, 51);\n}QPushButton::pressed{\n    background-color: rgb(66, 69, 74);\n}")
+        self.pushButton_user_algorithm.setObjectName("pushButton_user_algorithm")
+        self.verticalLayout_0.addWidget(self.pushButton_user_algorithm)
+
         self.pushButton_save_graph = QtWidgets.QPushButton(self.frame_change_settings)
         self.pushButton_save_graph.setMinimumSize(QtCore.QSize(0, 30))
         self.pushButton_save_graph.setMaximumSize(QtCore.QSize(16777215, 30))
@@ -543,10 +558,11 @@ class Ui_MainWindow(object):
         self.label_node_radius.setText(_translate("MainWindow", "Node radius"))
         self.label_DFS.setText(_translate("MainWindow", "DFS"))
         self.label_BFS.setText(_translate("MainWindow", "BFS"))
-        self.label_DIJKSTRA.setText(_translate("MainWindow", "DIJKSTRA"))
+        self.label_DIJKSTRA.setText(_translate("MainWindow", "SHORTEST PATH"))
         self.pushButton_directed.setText(_translate("MainWindow", "Directed"))
         self.pushButton_undirected.setText(_translate("MainWindow", "Undirected"))
-        self.pushButton_run_commands.setText(_translate("MainWindow", "Run Commands"))
+        self.pushButton_run_commands.setText(_translate("MainWindow", "Run Algorithms"))
+        self.pushButton_user_algorithm.setText(_translate("MainWindow", "Run Custom Algorithm"))
 
 
 if __name__ == "__main__":

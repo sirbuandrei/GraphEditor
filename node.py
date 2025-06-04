@@ -75,6 +75,46 @@ class Node(QGraphicsItem):
     def __repr__(self):
         return self.text.text()
 
+    def __lt__(self, other):
+        """Less than comparison for Node objects"""
+        if isinstance(other, Node):
+            return self.text.text() < other.text.text()
+        return NotImplemented
+
+    def __le__(self, other):
+        """Less than or equal comparison for Node objects"""
+        if isinstance(other, Node):
+            return self.text.text() <= other.text.text()
+        return NotImplemented
+
+    def __gt__(self, other):
+        """Greater than comparison for Node objects"""
+        if isinstance(other, Node):
+            return self.text.text() > other.text.text()
+        return NotImplemented
+
+    def __ge__(self, other):
+        """Greater than or equal comparison for Node objects"""
+        if isinstance(other, Node):
+            return self.text.text() >= other.text.text()
+        return NotImplemented
+
+    def __eq__(self, other):
+        """Equality comparison for Node objects"""
+        if isinstance(other, Node):
+            return self.text.text() == other.text.text()
+        return NotImplemented
+
+    def __ne__(self, other):
+        """Not equal comparison for Node objects"""
+        if isinstance(other, Node):
+            return self.text.text() != other.text.text()
+        return NotImplemented
+
+    def __hash__(self):
+        """Hash function for Node objects (needed for using in sets/dicts)"""
+        return hash(self.text.text())
+
     def set_radius(self, radius):
         """Seteaza o noua raza pentru cerc"""
 
