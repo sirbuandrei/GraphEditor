@@ -4,7 +4,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 
 
 class GraphModel(QObject):
-    update = pyqtSignal()
+    update_scene = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -21,12 +21,12 @@ class GraphModel(QObject):
     def add_edge(self, from_node, to_node, weight):
         self.edges[(from_node, to_node)] = weight
 
-        if not self.directed:
-            self.edges[(to_node, from_node)] = weight
+        #if not self.directed:
+            #self.edges[(to_node, from_node)] = weight
 
     def clear(self):
         self.nodes.clear()
         self.edges.clear()
 
     def graph_update(self):
-        self.update.emit()
+        self.update_scene.emit()

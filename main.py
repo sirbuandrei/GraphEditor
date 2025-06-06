@@ -1,5 +1,6 @@
 import sys
 
+from PyQt5.QtCore import QPointF
 from PyQt5.QtWidgets import QApplication
 
 from models.graph_model import GraphModel
@@ -17,6 +18,7 @@ from presenters.login_presenter import LoginPresenter
 from presenters.leaderboard_presenter import LeaderboardPresenter
 from presenters.input_presenter import InputPresenter
 from presenters.graph_presenter import GraphPresenter
+from views.node import Node
 
 #counter = 0  # PROGRESS BAR COUNTER
 
@@ -358,11 +360,6 @@ if __name__ == "__main__":
     leaderboard_page = LeaderboardPage()
     graph_view = GraphView()
 
-    #Presenters
-    leaderboard_presenter = LeaderboardPresenter(leaderboard_page, leaderboard_model)
-    input_presenter = InputPresenter(input_page, graph_model)
-    graph_presenter = GraphPresenter(graph_view, graph_model)
-
     def show_main_window(user_id):
         main_window = MainWindow(user_id)
 
@@ -371,5 +368,8 @@ if __name__ == "__main__":
         main_window.show()
 
     login_presenter = LoginPresenter(login_screen, user_model, on_login_success=show_main_window)
+    leaderboard_presenter = LeaderboardPresenter(leaderboard_page, leaderboard_model)
+    input_presenter = InputPresenter(input_page, graph_model)
+    graph_presenter = GraphPresenter(graph_view, graph_model)
 
     sys.exit(app.exec_())

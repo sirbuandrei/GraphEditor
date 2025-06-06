@@ -27,7 +27,7 @@ class Node(QGraphicsItem):
         self.pen = QPen(Qt.white, self.thickness, Qt.SolidLine)
         self.text = NodeText(text, self)
 
-        self.setPos(300, 300)
+        self.setPos(pos.x(), pos.y())
 
     def get_text(self):
         return self.text.text()
@@ -49,13 +49,104 @@ class Node(QGraphicsItem):
         scene_rect = self.scene().sceneRect()
         bounding_rect = self.boundingRect()
 
-        if self.x() - bounding_rect.width() < 0:
-            self.setPos(bounding_rect.width(), self.y())
-        elif self.x() + bounding_rect.width() > scene_rect.width():
-            self.setPos(scene_rect.width() - bounding_rect.width(), self.y())
+        x = self.x()
+        y = self.y()
 
-        if self.y() - bounding_rect.height() < 0:
-            self.setPos(self.x(), bounding_rect.height())
-        elif self.y() + bounding_rect.height() > scene_rect.height():
-            self.setPos(self.x(), scene_rect.height() - bounding_rect.height())
+        if x - bounding_rect.width() < scene_rect.left():
+            x = scene_rect.left() + bounding_rect.width()
+        elif x + bounding_rect.width() > scene_rect.right():
+            x = scene_rect.right() - bounding_rect.width()
 
+        if y - bounding_rect.height() < scene_rect.top():
+            y = scene_rect.top() + bounding_rect.height()
+        elif y + bounding_rect.height() > scene_rect.bottom():
+            y = scene_rect.bottom() - bounding_rect.height()
+
+        self.setPos(x, y)
+
+
+class LightweightNode(QGraphicsItem):
+    # Shared resources
+    _shared_pen = None
+    _shared_font = None
+
+    @classmethod
+    def get_shared_pen(cls):
+        if cls._shared_pen is None:
+            cls._shared_pen = QPen(Qt.white, 2, Qt.SolidLine)
+        return cls._shared_pen
+
+    @classmethod
+    def get_shared_font(cls):
+        if cls._shared_font is None:
+            cls._shared_font = QFont('Segoe UI Semibold', 11)
+        return cls._shared_font
+
+    def __init__(self, text, pos=None):
+        super().__init__()
+
+        # Set flags and properties
+        self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsSelectable)
+        self.setZValue(1)
+
+        # Store data
+        self.radius = 15
+        self.node_text = text
+
+        # CRITICAL: Pre-calculate and cache bounding rect
+        # This must be constant and fast according to Qt docs
+        r = self.radius
+        self._cached_bounding_rect = QRectF(-r, -r, 2 * r, 2 * r)
+
+        # Set position
+        if pos:
+            if hasattr(pos, 'x') and hasattr(pos, 'y'):
+                self.setPos(pos.x(), pos.y())
+            else:
+                self.setPos(pos[0], pos[1])
+        else:
+            self.setPos(300, 300)
+
+    def boundingRect(self):
+        """
+        CRITICAL: This method is called VERY frequently by Qt.
+        Must be fast, consistent, and never cause side effects.
+        From Qt docs: "This function should be as fast as possible"
+        """
+        # Return pre-calculated rect - NO calculations, NO method calls
+        return self._cached_bounding_rect
+
+    def paint(self, painter, option, widget=None):
+        """
+        Paint the node. This is only called when Qt needs to repaint.
+        """
+        try:
+            # Draw circle
+            painter.setPen(self.get_shared_pen())
+            painter.drawEllipse(self._cached_bounding_rect)
+
+            # Draw text
+            painter.setFont(self.get_shared_font())
+            painter.setPen(QPen(Qt.white))
+
+            # Get text metrics ONLY during paint, not in boundingRect
+            fm = painter.fontMetrics()
+            text_rect = fm.boundingRect(self.node_text)
+
+            # Center text
+            text_x = -text_rect.width() / 2
+            text_y = text_rect.height() / 4
+
+            painter.drawText(text_x, text_y, self.node_text)
+
+        except Exception as e:
+            print(f"Paint error: {e}")
+
+    def get_text(self):
+        return self.node_text
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        super().mouseMoveEvent(event)

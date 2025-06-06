@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import QMainWindow
 from qtwidgets import AnimatedToggle
 
 from styles import Styles
-from view import GraphicsView
 
 
 class MainWindow(QMainWindow):
@@ -34,7 +33,8 @@ class MainWindow(QMainWindow):
         self.setWindowFlag(Qt.FramelessWindowHint)
 
         self.dark_theme = False
-        self.pushButton_theme.click()
+        self.change_theme()
+        #self.pushButton_theme.click()
 
         #self.frame_change_settings.show()
 
@@ -54,30 +54,32 @@ class MainWindow(QMainWindow):
         self.pushButton_close.clicked.connect(lambda: self.close())
         self.pushButton_minimize.clicked.connect(lambda: self.showMinimized())
         self.pushButton_maximize.clicked.connect(self.maximize_restore)
-        self.pushButton_theme.clicked.connect(self.change_theme)
+        #self.pushButton_theme.clicked.connect(self.change_theme)
         self.pushButton_home.clicked.connect(self.show_input_page)
         self.pushButton_leaderboard.clicked.connect(self.show_leaderboard_page)
         self.pushButton_settings.clicked.connect(self.show_settings_page)
 
     def set_pages(self, input_page, config_page, leaderboard_page, graph_view):
-        self.page_container.addWidget(input_page)
-        self.page_container.addWidget(config_page)
-        self.page_container.addWidget(leaderboard_page)
-
         self._leaderboard_page = leaderboard_page
         self._input_page = input_page
         self._config_page = config_page
+        self._graph_view = graph_view
 
+        self._input_page.setParent(self.page_container)
+        self._config_page.setParent(self.page_container)
+        self._leaderboard_page.setParent(self.page_container)
+
+        self.page_container.addWidget(self._input_page)
+        self.page_container.addWidget(self._config_page)
+        self.page_container.addWidget(self._leaderboard_page)
 
         self._input_page.setStyleSheet(Styles.dark_frames_style)
         self._config_page.setStyleSheet(Styles.dark_frames_style)
         self._leaderboard_page.setStyleSheet(Styles.dark_frames_style)
 
-        self._graph_view = graph_view
-        self._graph_view.setParent(self.frame_graph)
-        self.horizontalLayout.addWidget(self._graph_view)
+        #self._graph_view.setParent(self.frame_graph)
+        #self.horizontalLayout.addWidget(self._graph_view)
         self._graph_view.setStyleSheet(Styles.dark_graphics_view_style)
-        #self._graph_view.startTimer(17)
         self._graph_view.show()
 
     def show_input_page(self):
@@ -263,11 +265,11 @@ class MainWindow(QMainWindow):
         self.label_mode.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.label_mode.setObjectName("label_mode")
         self.horizontalLayout_5.addWidget(self.label_mode)
-        self.pushButton_theme = AnimatedToggle((self.frame_mode), pulse_checked_color="#95a5de", checked_color="#7289da")
-        self.pushButton_theme.setMinimumSize(QtCore.QSize(55, 30))
-        self.pushButton_theme.setMaximumSize(QtCore.QSize(55, 30))
-        self.pushButton_theme.setObjectName("pushButton_theme")
-        self.horizontalLayout_5.addWidget(self.pushButton_theme)
+        # self.pushButton_theme = AnimatedToggle((self.frame_mode), pulse_checked_color="#95a5de", checked_color="#7289da")
+        # self.pushButton_theme.setMinimumSize(QtCore.QSize(55, 30))
+        # self.pushButton_theme.setMaximumSize(QtCore.QSize(55, 30))
+        # self.pushButton_theme.setObjectName("pushButton_theme")
+        # self.horizontalLayout_5.addWidget(self.pushButton_theme)
         self.horizontalLayout_4.addWidget(self.frame_mode)
         self.verticalLayout_2.addWidget(self.frame_central_top)
         self.frame_graph = QtWidgets.QFrame(self.frame_central)

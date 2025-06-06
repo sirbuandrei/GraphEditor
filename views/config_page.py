@@ -42,12 +42,12 @@ class ConfigPage(QtWidgets.QFrame):
         self.label_force_mode.setAlignment(QtCore.Qt.AlignCenter)
         self.label_force_mode.setObjectName("label_force_mode")
         self.horizontalLayout_3_0.addWidget(self.label_force_mode)
-        self.pushButton_force_mode = AnimatedToggle((self.frame_force_mode), pulse_checked_color="#95a5de",
-                                                    checked_color="#7289da")
-        self.pushButton_force_mode.setMinimumSize(QtCore.QSize(55, 30))
-        self.pushButton_force_mode.setMaximumSize(QtCore.QSize(55, 30))
-        self.pushButton_force_mode.setObjectName("pushButton_force_mode")
-        self.horizontalLayout_3_0.addWidget(self.pushButton_force_mode)
+        # self.pushButton_force_mode = AnimatedToggle((self.frame_force_mode), pulse_checked_color="#95a5de",
+        #                                             checked_color="#7289da")
+        # self.pushButton_force_mode.setMinimumSize(QtCore.QSize(55, 30))
+        # self.pushButton_force_mode.setMaximumSize(QtCore.QSize(55, 30))
+        # self.pushButton_force_mode.setObjectName("pushButton_force_mode")
+        # self.horizontalLayout_3_0.addWidget(self.pushButton_force_mode)
         self.verticalLayout_0.addWidget(self.frame_force_mode)
         self.frame_node_radius = QtWidgets.QFrame(self)
         self.frame_node_radius.setMinimumSize(QtCore.QSize(0, 50))
@@ -262,7 +262,7 @@ class ConfigPage(QtWidgets.QFrame):
 
         _translate = QtCore.QCoreApplication.translate
         self.label_force_mode.setText(_translate("ConfigPage", "Force mode"))
-        self.pushButton_force_mode.setText(_translate("ConfigPage", "PushButton"))
+        #self.pushButton_force_mode.setText(_translate("ConfigPage", "PushButton"))
         self.label_node_radius.setText(_translate("ConfigPage", "Node radius"))
         self.label_DFS.setText(_translate("ConfigPage", "DFS"))
         self.label_BFS.setText(_translate("ConfigPage", "BFS"))

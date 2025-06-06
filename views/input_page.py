@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import pyqtSignal, QTimer
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget
 
 
@@ -23,19 +23,8 @@ class InputPage(QtWidgets.QFrame):
 
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.label_node_count = QtWidgets.QLabel(self)
-        font = QtGui.QFont()
-        font.setFamily("Happy School")
-        font.setPointSize(14)
-        self.label_node_count.setFont(font)
-        self.label_node_count.setStyleSheet("QLabel{\n    color: white;\n}")
-        self.label_node_count.setObjectName("label_node_count")
-        self.verticalLayout_3.addWidget(self.label_node_count)
-        self.lineEdit_node_count = QtWidgets.QLineEdit(self)
-        self.lineEdit_node_count.setStyleSheet(
-            'QLineEdit{\n    background-color: transparent;\n    border: none;\n    border-bottom: 2px solid white;\n    border-bottom-style: solid; \n    color:  white;\n    font: 63 14pt "Segoe UI Semibold";\n}')
-        self.lineEdit_node_count.setObjectName("lineEdit_node_count")
-        self.verticalLayout_3.addWidget(self.lineEdit_node_count)
+
+        # Node data label and text area
         self.label_node_data = QtWidgets.QLabel(self)
         font = QtGui.QFont()
         font.setFamily("Happy School")
@@ -44,35 +33,62 @@ class InputPage(QtWidgets.QFrame):
         self.label_node_data.setStyleSheet("QLabel{\n    color: white;\n}")
         self.label_node_data.setObjectName("label_node_data")
         self.verticalLayout_3.addWidget(self.label_node_data)
+
         self.textEdit_node_data = QtWidgets.QTextEdit(self)
         self.textEdit_node_data.setStyleSheet(
             'QTextEdit{\n    background-color: transparent;\n    border: none;\n    border-radius: 0px;\n    border-left:2px solid white;\n    border-left-style: solid;\n    color: white;\n    font: 63 14pt "Segoe UI Semibold";\n}')
         self.textEdit_node_data.setObjectName("textEdit_node_data")
         self.verticalLayout_3.addWidget(self.textEdit_node_data)
 
-        # self.label_node_count.setText("Node count")
-        # self.label_node_data.setText("Node data")
+        # Generate Graph Button
+        self.pushButton_generate = QtWidgets.QPushButton(self)
+        self.pushButton_generate.setMinimumSize(QtCore.QSize(0, 40))
+        self.pushButton_generate.setMaximumSize(QtCore.QSize(16777215, 40))
+        self.pushButton_generate.setStyleSheet("""
+            QPushButton {
+                background-color: #7289da;
+                border: none;
+                border-radius: 10px;
+                color: white;
+                font: 63 12pt "Segoe UI Semibold";
+                margin-top: 10px;
+            }
+            QPushButton:hover {
+                background-color: #95a5de;
+            }
+            QPushButton:pressed {
+                background-color: #5b6eae;
+            }
+        """)
+        self.pushButton_generate.clicked.connect(self.generate_graph)
+        self.verticalLayout_3.addWidget(self.pushButton_generate)
 
+        # Set labels
         _translate = QtCore.QCoreApplication.translate
-        self.label_node_count.setText(_translate("InputPage", "Enter node count"))
         self.label_node_data.setText(_translate("InputPage", "Enter node data"))
-        #self.horizontalLayout_9.addWidget(self)
+        self.pushButton_generate.setText(_translate("InputPage", "Generate Graph"))
 
-        self.textEdit_node_data.installEventFilter(self)
-        self.setup_key_timer()
+    def generate_graph(self):
+        try:
+            print("=== GENERATE GRAPH START ===")
+            text = self.textEdit_node_data.toPlainText()
+            print(f"Text extracted: {text}")
 
-    def setup_key_timer(self):
-        self.keyTimer = QTimer()
-        self.keyTimer.setSingleShot(True)
-        self.keyTimer.setInterval(800)
-        self.keyTimer.timeout.connect(lambda: self.send_data.emit(self.textEdit_node_data.toPlainText()))
+            print("About to emit signal...")
+            self.send_data.emit(text)
+            print("Signal emitted successfully")
+
+            print(f"Generating graph with data: {text}")
+            print("=== GENERATE GRAPH END ===")
+
+        except Exception as e:
+            print(f"ERROR in generate_graph: {e}")
+            import traceback
+            traceback.print_exc()
 
     def showEvent(self, event):
-        super().showEvent(event)
-        self.show_page.emit()
-
-    def eventFilter(self, source: QWidget, event: QtCore.QEvent) -> bool:
-        if source is self.textEdit_node_data and event.type() == QtCore.QEvent.KeyPress:
-            self.keyTimer.start()
-
-        return super(InputPage, self).eventFilter(source, event)
+        try:
+            super().showEvent(event)
+            self.show_page.emit()
+        except RuntimeError:
+            pass
