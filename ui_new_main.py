@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from qtwidgets import AnimatedToggle
 from view import GraphicsView
+from views.leaderboard_page import LeaderboardPage
 
 class Ui_MainWindow(object):
     MINIMUM_HEIGHT = 600
@@ -176,17 +177,20 @@ class Ui_MainWindow(object):
         self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_9.setSpacing(0)
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
-        self.frame_change_settings = QtWidgets.QFrame(self.frame_container)
-        self.frame_change_settings.setGeometry(QtCore.QRect(250, 140, 250, 481))
-        self.frame_change_settings.setMinimumSize(QtCore.QSize(250, 0))
-        self.frame_change_settings.setMaximumSize(QtCore.QSize(250, 16777215))
-        self.frame_change_settings.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_change_settings.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_change_settings.setObjectName("frame_change_settings")
-        self.verticalLayout_0 = QtWidgets.QVBoxLayout(self.frame_change_settings)
-        self.verticalLayout_0.setObjectName("verticalLayout_0")
+
+
+        # self.frame_change_settings = QtWidgets.QFrame(self.frame_container)
+        # self.frame_change_settings.setGeometry(QtCore.QRect(250, 140, 250, 481))
+        # self.frame_change_settings.setMinimumSize(QtCore.QSize(250, 0))
+        # self.frame_change_settings.setMaximumSize(QtCore.QSize(250, 16777215))
+        # self.frame_change_settings.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        # self.frame_change_settings.setFrameShadow(QtWidgets.QFrame.Raised)
+        # self.frame_change_settings.setObjectName("frame_change_settings")
+        # self.verticalLayout_0 = QtWidgets.QVBoxLayout(self.frame_change_settings)
+        # self.verticalLayout_0.setObjectName("verticalLayout_0")
 
         # Create leaderboard container frame (matches frame_change_settings)
+        #self.frame_leaderboard = LeaderboardPage(self.frame_container)
         self.frame_leaderboard = QtWidgets.QFrame(self.frame_container)
         self.frame_leaderboard.setMinimumSize(QtCore.QSize(250, 0))
         self.frame_leaderboard.setMaximumSize(QtCore.QSize(250, 16777215))

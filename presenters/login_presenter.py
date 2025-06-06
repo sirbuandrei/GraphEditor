@@ -16,8 +16,8 @@ class LoginPresenter:
         success, result = self.user.login(email, password)
 
         if success:
-           self.on_login_success(result)
-           self.login_screen.close()
+            self.on_login_success(result)
+            self.login_screen.close()
         else:
             self.login_screen.label_error.setStyleSheet("color: red; font: 10pt 'Segoe UI';")
             self.login_screen.label_error.setText(result)
