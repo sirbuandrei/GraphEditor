@@ -1,20 +1,18 @@
 import random
 
-from PyQt5.QtGui import QPainterPath, QPen
-
-from PyQt5.QtCore import QPointF, QRectF, Qt, QObject
+from PyQt5.QtCore import QPointF, QRectF, QObject
 
 from views.edge import Edge
 from views.node import LightweightNode
 
 
 class GraphPresenter(QObject):
-    def __init__(self, view, model):
+    def __init__(self, first_view, model):
         super().__init__()
-        self.graph_view = view
+        self.graph_view = first_view
         self.graph_model = model
 
-        self.graph_model.update_scene.connect(self.update_items)
+        self.graph_model.update_scene_items.connect(self.update_items)
 
     def update_items(self):
         model_nodes = self.graph_model.nodes
@@ -23,19 +21,15 @@ class GraphPresenter(QObject):
         current_nodes = self.get_nodes()
         current_edges = self.get_edges()
 
-        print(f"=== Update Items ===")
-        print(f"Model nodes: {model_nodes}")
-        print(f"Model edges: {self.graph_model.edges}")
-
         if not current_nodes:
             self.add_nodes(model_nodes)
             self.add_edges(model_edges)
         elif not model_nodes:
             self.remove_nodes(current_nodes)
+            self.remove_edges(current_edges)
         else:
             self.update_nodes(model_nodes, current_nodes)
-
-        #self.update_edges(model_edges, current_edges)
+            self.update_edges(model_edges, current_edges)
 
     def update_nodes(self, model_nodes, current_nodes):
         nodes_to_add = model_nodes - set(node.get_text() for node in current_nodes)
@@ -44,31 +38,57 @@ class GraphPresenter(QObject):
         self.add_nodes(nodes_to_add)
         self.remove_nodes(nodes_to_remove)
 
-    def update_edges(self):
-        print("Updating edges ...")
+    def update_edges(self, model_edges, current_edges):
+        current_edge_dict = {}
+        for edge in current_edges:
+            start_text = edge.get_start_node().get_text()
+            end_text = edge.get_end_node().get_text()
+            edge_key = (start_text, end_text)
+            current_edge_dict[edge_key] = {
+                'cost': edge.get_cost(),
+                'edge_object': edge
+            }
+
+        # Get edge keys from model
+        model_edge_keys = set(model_edges.keys())
+        current_edge_keys = set(current_edge_dict.keys())
+
+        edge_keys_to_add = model_edge_keys - current_edge_keys
+        edges_to_add = {key: model_edges[key] for key in edge_keys_to_add}
+
+        edge_keys_to_remove = current_edge_keys - model_edge_keys
+        edges_to_remove = [current_edge_dict[key]['edge_object'] for key in edge_keys_to_remove]
+
+        edge_keys_to_modify = []
+        edges_to_modify = {}
+
+        for edge_key in (model_edge_keys & current_edge_keys):
+            model_cost = model_edges[edge_key]
+            current_cost = current_edge_dict[edge_key]['cost']
+
+            if model_cost != current_cost:
+                edge_keys_to_modify.append(edge_key)
+                edges_to_modify[edge_key] = {
+                    'new_cost': model_cost,
+                    'edge_object': current_edge_dict[edge_key]['edge_object']
+                }
+
+        self.add_edges(edges_to_add)
+        self.remove_edges(edges_to_remove)
+        self.modify_edges(edges_to_modify)
 
     def add_nodes(self, nodes_to_add):
         for node_text in nodes_to_add:
             position = get_random_perimeter_position(
                 self.graph_view.scene.sceneRect(),
-                node_radius=15
+                node_radius=self.graph_model.get_radius()
             )
-            node = LightweightNode(node_text, position)
-            self.graph_view.scene.addItem(node)
-
+            node = LightweightNode(node_text, position, self.graph_model.get_radius())
+            self.graph_view.add_node(node)
 
     def remove_nodes(self, nodes_to_remove):
         for node in nodes_to_remove:
-            self.graph_view.scene.removeItem(node)
-
-    def get_nodes(self):
-        list_of_nodes = set()
-
-        for item in self.graph_view.scene.items():
-            if isinstance(item, LightweightNode):
-                list_of_nodes.add(item)
-
-        return list_of_nodes
+            self.graph_view.remove_node(node)
 
     def find_node_by_text(self, text):
         for node in self.get_nodes():
@@ -89,11 +109,30 @@ class GraphPresenter(QObject):
                     start_node=start_node,
                     end_node=end_node,
                     cost=cost,
-                    directed=self.graph_model.directed
+                    directed=self.graph_view.get_directed()
                 )
-                self.graph_view.scene.addItem(edge)
+                self.graph_view.add_edge(edge)
             else:
                 print(f"Could not find nodes for edge {start_text} -> {end_text}")
+
+    def remove_edges(self, edges_to_remove):
+        for edge in edges_to_remove:
+            self.graph_view.remove_edge(edge)
+
+    def modify_edges(self, edges_to_modify):
+        for edge_key, edge_info in edges_to_modify.items():
+            edge_object = edge_info['edge_object']
+            new_cost = edge_info['new_cost']
+            edge_object.set_cost(new_cost)
+
+    def get_nodes(self):
+        list_of_nodes = set()
+
+        for item in self.graph_view.scene.items():
+            if isinstance(item, LightweightNode):
+                list_of_nodes.add(item)
+
+        return list_of_nodes
 
     def get_edges(self):
         list_of_edges = set()

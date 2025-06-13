@@ -1,3 +1,5 @@
+import re
+
 from PyQt5.QtCore import Qt, QObject
 
 
@@ -11,8 +13,6 @@ class InputPresenter(QObject):
 
     def handle_input(self, raw_text):
         try:
-            print("=== INPUT PRESENTER START ===")
-            print(f"Received text: {raw_text}")
             self.graph_model.clear()
 
             if not raw_text:
@@ -37,13 +37,12 @@ class InputPresenter(QObject):
                     if (_line[0], _line[1]) not in self.graph_model.edges \
                             and _line[0] is not _line[1]:
                         cost = _line[2] if len(_line) >= 3 else None
-                        self.graph_model.add_edge(_line[0], _line[1], cost)
+                        if cost is None or not cost.isdigit():
+                            self.graph_model.add_edge(_line[0], _line[1], None)
+                        else:
+                            self.graph_model.add_edge(_line[0], _line[1], int(cost))
 
-            print("About to call graph_update...")
             self.graph_model.graph_update()
-            print("graph_update completed")
-
-            print("=== INPUT PRESENTER END ===")
 
         except Exception as e:
             print(f"ERROR in handle_input: {e}")

@@ -494,7 +494,5 @@ class Connection(object):
         offsetX = dx * percent
         offsetY = dy * percent
 
-        # if not node1.pinned:
         self.node1.setPos(self.node1.x() - offsetX, self.node1.y() - offsetY)
-        # if not node2.pinned:
         self.node2.setPos(self.node2.x() + offsetX, self.node2.y() + offsetY)

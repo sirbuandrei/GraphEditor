@@ -1,8 +1,9 @@
 import random
 
-from PyQt5.QtCore import Qt, QRectF
+from PyQt5.QtCore import Qt, QRectF, QPointF, pyqtProperty, QPropertyAnimation
 from PyQt5.QtGui import QPen, QBrush, QColor, QFont
-from PyQt5.QtWidgets import QGraphicsEllipseItem, QGraphicsItem, QWidget, QGraphicsSimpleTextItem
+from PyQt5.QtWidgets import QGraphicsEllipseItem, QGraphicsItem, QWidget, QGraphicsSimpleTextItem, QGraphicsEffect, \
+    QGraphicsColorizeEffect
 
 
 class NodeText(QGraphicsSimpleTextItem):
@@ -64,89 +65,58 @@ class Node(QGraphicsItem):
 
         self.setPos(x, y)
 
+class NodeText(QGraphicsSimpleTextItem):
+    def __init__(self, text, parent):
+        super(NodeText, self).__init__(text, parent)
+        self.setPen(QPen(Qt.white, 0.5, Qt.SolidLine))
+        self.setBrush(QBrush(Qt.white))
+        self.setFont(QFont('Segoe UI Semibold', 11))
+        self.setPos(-self.boundingRect().width() / 2, -self.boundingRect().height() / 2)
+
 
 class LightweightNode(QGraphicsItem):
-    # Shared resources
-    _shared_pen = None
     _shared_font = None
 
-    @classmethod
-    def get_shared_pen(cls):
-        if cls._shared_pen is None:
-            cls._shared_pen = QPen(Qt.white, 2, Qt.SolidLine)
-        return cls._shared_pen
-
-    @classmethod
-    def get_shared_font(cls):
-        if cls._shared_font is None:
-            cls._shared_font = QFont('Segoe UI Semibold', 11)
-        return cls._shared_font
-
-    def __init__(self, text, pos=None):
+    def __init__(self, text, pos=None, radius=15):
         super().__init__()
+        self._radius = radius
+        self._node_text = NodeText(text, self)
+        self._current_color = QColor("white")
+        self._pen = QPen(Qt.white, 2, Qt.SolidLine)
+        self._font = QFont('Segoe UI Semibold', 11)
 
-        # Set flags and properties
         self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsSelectable)
-        self.setZValue(1)
+        self.setZValue(2)
+        self.setPos(pos.x(), pos.y())
 
-        # Store data
-        self.radius = 15
-        self.node_text = text
+    def get_center(self):
+        return QPointF(self.x(), self.y())
 
-        # CRITICAL: Pre-calculate and cache bounding rect
-        # This must be constant and fast according to Qt docs
-        r = self.radius
-        self._cached_bounding_rect = QRectF(-r, -r, 2 * r, 2 * r)
+    def get_radius(self):
+        return self._radius
 
-        # Set position
-        if pos:
-            if hasattr(pos, 'x') and hasattr(pos, 'y'):
-                self.setPos(pos.x(), pos.y())
-            else:
-                self.setPos(pos[0], pos[1])
-        else:
-            self.setPos(300, 300)
+    def get_text(self):
+        return self._node_text.text()
+
+    def get_color(self):
+        return self._pen.color()
+
+    def set_radius(self, radius):
+        self.prepareGeometryChange()
+        self._radius = radius
 
     def boundingRect(self):
-        """
-        CRITICAL: This method is called VERY frequently by Qt.
-        Must be fast, consistent, and never cause side effects.
-        From Qt docs: "This function should be as fast as possible"
-        """
-        # Return pre-calculated rect - NO calculations, NO method calls
-        return self._cached_bounding_rect
+        r = self._radius
+        return QRectF(-r, -r, 2 * r, 2 * r)
 
     def paint(self, painter, option, widget=None):
-        """
-        Paint the node. This is only called when Qt needs to repaint.
-        """
         try:
-            # Draw circle
-            painter.setPen(self.get_shared_pen())
-            painter.drawEllipse(self._cached_bounding_rect)
-
-            # Draw text
-            painter.setFont(self.get_shared_font())
-            painter.setPen(QPen(Qt.white))
-
-            # Get text metrics ONLY during paint, not in boundingRect
-            fm = painter.fontMetrics()
-            text_rect = fm.boundingRect(self.node_text)
-
-            # Center text
-            text_x = -text_rect.width() / 2
-            text_y = text_rect.height() / 4
-
-            painter.drawText(text_x, text_y, self.node_text)
+            painter.setPen(self._pen)
+            painter.drawEllipse(self.boundingRect())
 
         except Exception as e:
             print(f"Paint error: {e}")
 
-    def get_text(self):
-        return self.node_text
-
-    def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-
-    def mouseMoveEvent(self, event):
-        super().mouseMoveEvent(event)
+    def color_change(self, color):
+        self._pen.setColor(color)
+        self.update()

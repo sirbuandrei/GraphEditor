@@ -1,6 +1,5 @@
 import sys
 
-from PyQt5.QtCore import QPointF
 from PyQt5.QtWidgets import QApplication
 
 from models.graph_model import GraphModel
@@ -18,7 +17,8 @@ from presenters.login_presenter import LoginPresenter
 from presenters.leaderboard_presenter import LeaderboardPresenter
 from presenters.input_presenter import InputPresenter
 from presenters.graph_presenter import GraphPresenter
-from views.node import Node
+
+from utils.coordinator import Coordinator
 
 #counter = 0  # PROGRESS BAR COUNTER
 
@@ -348,28 +348,30 @@ from views.node import Node
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    # Models
     graph_model = GraphModel()
-    user_model = UserModel()
-    leaderboard_model = Leaderboard()
+    #user_model = UserModel()
+    #leaderboard_model = Leaderboard()
 
-    # Views
-    login_screen = LoginScreen()
+    #login_screen = LoginScreen()
     input_page = InputPage()
     config_page = ConfigPage()
     leaderboard_page = LeaderboardPage()
     graph_view = GraphView()
+    main_window = MainWindow()
 
-    def show_main_window(user_id):
-        main_window = MainWindow(user_id)
+    main_window.set_pages(input_page, config_page, leaderboard_page, graph_view)
 
-        main_window.set_pages(input_page, config_page, leaderboard_page, graph_view)
-
-        main_window.show()
-
-    login_presenter = LoginPresenter(login_screen, user_model, on_login_success=show_main_window)
-    leaderboard_presenter = LeaderboardPresenter(leaderboard_page, leaderboard_model)
+    #leaderboard_presenter = LeaderboardPresenter(leaderboard_page, leaderboard_model)
     input_presenter = InputPresenter(input_page, graph_model)
     graph_presenter = GraphPresenter(graph_view, graph_model)
+
+    coordinator = Coordinator(config_page, graph_view, graph_model)
+
+    def show_main_window(user_id):
+        main_window.set_user_id(user_id)
+        main_window.show()
+
+    show_main_window("123")
+    #login_presenter = LoginPresenter(login_screen, user_model, on_login_success=show_main_window)
 
     sys.exit(app.exec_())

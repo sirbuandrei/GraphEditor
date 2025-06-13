@@ -390,21 +390,12 @@ class GraphEngine(object):
             self.view.scene.addItem(edge)
 
     def update_nodes(self):
-        """Reinnoiste pozirile nodurilor
-
-        Daca modul de gravitatie nu este dezactivat se caluleaza forta de gravitatie
-        care actioneaza asuprea fiecarui nod si i se actualizeaza pozitia in funtie
-        de aceasta, dupa care se verifica coliziunea fiecarui nod.
-        """
-
         for node in self.nodes:
             if self.gravity:
                 node.force = self.forces(node)
 
-                #tempPos = node.pos()
                 node.moveBy(node.force.x() * (dt ** 2),
                             node.force.y() * (dt ** 2))
-                #node.oldPos = tempPos
 
             self.check_collision(node)
 
@@ -436,6 +427,8 @@ class GraphEngine(object):
         for connection in self.connections:
             dx, dy, angle = self.get_angle(connection.node1, connection.node2)
             connection.update(dx, dy)
+
+
             # node1 = connection.node1
             # node2 = connection.node2
             #

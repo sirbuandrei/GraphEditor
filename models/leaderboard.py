@@ -7,16 +7,23 @@ class Leaderboard:
 
     def get_leaderboard(self):
         try:
-            users_ref = self.db.collection("leaderboard")
+            db = firestore.client()
+            users_ref = db.collection("leaderboard")
             docs = users_ref.stream()
 
             if not docs:
                 return []
 
+            return []
+
             leaderboard_list = []
-            for doc in docs:
-                email = auth.get_user(doc.id).email
-                leaderboard_list.append({'email': email, 'score': int(doc.to_dict()['Points'])})
+            try:
+                for doc in docs:
+                    email = auth.get_user(doc.id).email
+                    leaderboard_list.append({'email': email, 'score': int(doc.to_dict()['Points'])})
+
+            except Exception as e:
+                print(f"Error fetching user data: {e}")
 
             return sorted(leaderboard_list, key=lambda x: x['score'], reverse=True)
 

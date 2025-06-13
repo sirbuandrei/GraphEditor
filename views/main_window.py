@@ -13,10 +13,9 @@ class MainWindow(QMainWindow):
     MINIMUM_WIDTH = 900
     MINIMUM_HEIGHT = 600
 
-    def __init__(self, user_id):
+    def __init__(self):
         super().__init__()
-        self.user_id = user_id
-
+        self.user_id = None
         self._graph_view = None
         self._config_page = None
         self._input_page = None
@@ -28,33 +27,23 @@ class MainWindow(QMainWindow):
         self.setup_button_functions()
         self.setup_initial_settings()
 
+    def set_user_id(self, user_id):
+        self.user_id = user_id
+
     def setup_initial_settings(self):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowFlag(Qt.FramelessWindowHint)
 
+        self.frame_actions_btns.installEventFilter(self)
+
         self.dark_theme = False
-        self.change_theme()
-        #self.pushButton_theme.click()
-
-        #self.frame_change_settings.show()
-
-        #self.spinBox_node_radius.setRange(10, 30)
-        #self.spinBox_node_radius.setValue(15)
-
-        #self.pushButton_theme.click()
-        #self.pushButton_force_mode.click()
-        #self.pushButton_undirected.click()
-
-        #self.pushButton_directed.setStyleSheet(Styles.btn_directed_undirected_non_clicked)
-        #self.pushButton_undirected.setStyleSheet(Styles.btn_directed_undirected_clicked)
-
-        #self.page_container.set_theme(self._input_page)
+        self.pushButton_theme.click()
 
     def setup_button_functions(self):
         self.pushButton_close.clicked.connect(lambda: self.close())
         self.pushButton_minimize.clicked.connect(lambda: self.showMinimized())
         self.pushButton_maximize.clicked.connect(self.maximize_restore)
-        #self.pushButton_theme.clicked.connect(self.change_theme)
+        self.pushButton_theme.clicked.connect(self.change_theme)
         self.pushButton_home.clicked.connect(self.show_input_page)
         self.pushButton_leaderboard.clicked.connect(self.show_leaderboard_page)
         self.pushButton_settings.clicked.connect(self.show_settings_page)
@@ -77,10 +66,12 @@ class MainWindow(QMainWindow):
         self._config_page.setStyleSheet(Styles.dark_frames_style)
         self._leaderboard_page.setStyleSheet(Styles.dark_frames_style)
 
-        #self._graph_view.setParent(self.frame_graph)
-        #self.horizontalLayout.addWidget(self._graph_view)
+        self._graph_view.setParent(self.frame_graph)
+        self.horizontalLayout.addWidget(self._graph_view)
         self._graph_view.setStyleSheet(Styles.dark_graphics_view_style)
         self._graph_view.show()
+
+        self._config_page.spinBox_node_radius.setValue(15)
 
     def show_input_page(self):
         self.page_container.setCurrentWidget(self._input_page)
@@ -114,6 +105,20 @@ class MainWindow(QMainWindow):
         else:
             self.pushButton_maximize.setIcon(QIcon(r"icons\cil-window-maximize.png"))
             self.showNormal()
+
+    def eventFilter(self, obj, event):
+        if obj == self.frame_actions_btns:
+            if event.type() == QEvent.MouseButtonDblClick:
+                print('Double Click')
+                self.maximize_restore()
+
+            elif event.type() == QEvent.MouseButtonPress:
+                self.drag_pos = event.pos()
+
+            elif event.type() == QEvent.MouseMove and not self.isMaximized():
+                    self.move(event.globalPos() - self.drag_pos)
+
+        return super().eventFilter(obj, event)
 
     def setup_ui(self):
         self.setObjectName("MainWindow")
@@ -158,8 +163,8 @@ class MainWindow(QMainWindow):
         self.horizontalLayout_3.addWidget(self.pushButton_minimize)
         self.pushButton_maximize = QtWidgets.QPushButton(self.frame_btns)
         self.pushButton_maximize.setIcon(QtGui.QIcon("icons\\cil-window-maximize.png"))
-        self.pushButton_maximize.setMinimumSize(QtCore.QSize(24, 24))
-        self.pushButton_maximize.setMaximumSize(QtCore.QSize(24, 24))
+        self.pushButton_maximize.setMinimumSize(QtCore.QSize(25, 25))
+        self.pushButton_maximize.setMaximumSize(QtCore.QSize(25, 25))
         self.pushButton_maximize.setStyleSheet(
             "QPushButton{\n    background-color: transparent;\n    border: none;\n}\nQPushButton::hover{\n    background-color:  rgb(55, 56, 59);\n}\nQPushButton::pressed{\n    background-color:  rgb(86, 87, 89);\n}")
         self.pushButton_maximize.setText("")
@@ -206,7 +211,7 @@ class MainWindow(QMainWindow):
         self.pushButton_settings.setStyleSheet(
             "QPushButton{\n    background-color: transparent;\n    border-radius: 10px;\n}\nQPushButton::hover{\n    background-color: rgb(44, 47, 51);\n}")
         self.pushButton_settings.setText("")
-        self.pushButton_settings.setIcon(QtGui.QIcon("icons/cil-terminal.png"))
+        self.pushButton_settings.setIcon(QtGui.QIcon("icons/cil-settings.png"))
         self.pushButton_settings.setIconSize(QtCore.QSize(35, 35))
         self.pushButton_settings.setObjectName("pushButton_settings")
         self.horizontalLayout_4.addWidget(self.frame_settings)
@@ -265,11 +270,11 @@ class MainWindow(QMainWindow):
         self.label_mode.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.label_mode.setObjectName("label_mode")
         self.horizontalLayout_5.addWidget(self.label_mode)
-        # self.pushButton_theme = AnimatedToggle((self.frame_mode), pulse_checked_color="#95a5de", checked_color="#7289da")
-        # self.pushButton_theme.setMinimumSize(QtCore.QSize(55, 30))
-        # self.pushButton_theme.setMaximumSize(QtCore.QSize(55, 30))
-        # self.pushButton_theme.setObjectName("pushButton_theme")
-        # self.horizontalLayout_5.addWidget(self.pushButton_theme)
+        self.pushButton_theme = AnimatedToggle((self.frame_mode), pulse_checked_color="#95a5de", checked_color="#7289da")
+        self.pushButton_theme.setMinimumSize(QtCore.QSize(55, 30))
+        self.pushButton_theme.setMaximumSize(QtCore.QSize(55, 30))
+        self.pushButton_theme.setObjectName("pushButton_theme")
+        self.horizontalLayout_5.addWidget(self.pushButton_theme)
         self.horizontalLayout_4.addWidget(self.frame_mode)
         self.verticalLayout_2.addWidget(self.frame_central_top)
         self.frame_graph = QtWidgets.QFrame(self.frame_central)
@@ -699,155 +704,3 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label_title.setText(_translate("MainWindow", "GRAPH EDITOR"))
         self.label_mode.setText(_translate("MainWindow", "DARK MODE"))
-        #self.label_node_count.setText(_translate("MainWindow", "Node count"))
-        #self.label_node_data.setText(_translate("MainWindow", "Node data"))
-        #self.label_force_mode.setText(_translate("MainWindow", "Force mode"))
-        #self.pushButton_force_mode.setText(_translate("MainWindow", "PushButton"))
-        #self.label_node_radius.setText(_translate("MainWindow", "Node radius"))
-        #self.label_DFS.setText(_translate("MainWindow", "DFS"))
-        #self.label_BFS.setText(_translate("MainWindow", "BFS"))
-        #self.label_DIJKSTRA.setText(_translate("MainWindow", "SHORTEST PATH"))
-        #self.pushButton_directed.setText(_translate("MainWindow", "Directed"))
-        #self.pushButton_undirected.setText(_translate("MainWindow", "Undirected"))
-        #self.pushButton_run_commands.setText(_translate("MainWindow", "Run Algorithms"))
-        #self.pushButton_user_algorithm.setText(_translate("MainWindow", "Run Custom Algorithm"))
-
-    # def eventFilter(self, obj, event):
-    #     """Filtrarea event-urilor aplicatiei
-    #
-    #     Event-urile importante provin de la 2 atribute : textEdit_node_data
-    #     si frame_actions_btns.
-    #     De la textEdit_node_data se va manipula event-ul de KeyPress, de
-    #     fiecare data cand o tasta este apasata in interiorul textEdit_node_data
-    #     se va reseta timer-ul pentru tastat. Alte event-uri de KeyPress nu sunt
-    #     relevante.
-    #     De la frame_actions_btns se vor manipula event-urile : MouseButtonDblClick,
-    #     MouseButtonPress, MouseMove . Primul event va maximiza / micsora aplicatia
-    #     in cazul unui dublu click pe frame-ul superior. Cel de-al doilea event tine
-    #     minte pozitia in care se apasa frame-ul superior pentru ca mai apoi sa fie
-    #     folosita de event-ul MouseMove puntru a muta window-ul aplicatiei, in cazul
-    #     miscarii de mouse-ului.
-    #
-    #     Parametrii
-    #     ----------
-    #     obj : QObject
-    #         obiectul care trimite eventul
-    #     event : QEvent
-    #         tipul de event
-    #     """
-    #
-    #     if obj == self.textEdit_node_data and event.type() == QEvent.KeyPress:
-    #         self.keyTimer.start()
-    #
-    #     elif obj == self.frame_actions_btns:
-    #
-    #         if event.type() == QEvent.MouseButtonDblClick:
-    #             self.functions.maximize_restore()
-    #
-    #         elif event.type() == QEvent.MouseButtonPress:
-    #             self.drag_pos = event.pos()
-    #
-    #         elif event.type() == QEvent.MouseMove:
-    #             if not self.isMaximized():
-    #                 self.move(event.globalPos() - self.drag_pos)
-    #             # else:
-    #             #     self.functions.maximize_restore()
-    #             #     #self.move(self.drag_pos)
-    #             #     #print(ratio)
-    #             #     # TODO: check bug
-    #
-    #     return super(self).eventFilter(obj, event)
-
-#         self.setupUi(self)
-#         self.functions = Ui_Functions(self)
-#         self.setup_ui_functions()
-#         self.setup_initial_settings()
-#         self.setup_key_timer()
-#
-#         # Insaland un event filter se vor putea manipula mai
-#         # bine eventurile care provin de la aceste atribute
-#         self.textEdit_node_data.installEventFilter(self)
-#         self.frame_actions_btns.installEventFilter(self)
-#
-#     def setup_ui_functions(self):
-#         """Atribuirea functilor specifice fiecarui buton"""
-#
-#         self.pushButton_close.clicked.connect(lambda: self.close())
-#         self.pushButton_minimize.clicked.connect(lambda: self.showMinimized())
-#         self.pushButton_maximize.clicked.connect(self.functions.maximize_restore)
-#         self.pushButton_mode.clicked.connect(self.functions.change_theme)
-#         self.pushButton_settings.clicked.connect(self.functions.show_settings_page)
-#         self.pushButton_run_commands.clicked.connect(self.functions.run_commands)
-#         self.pushButton_save_graph.clicked.connect(self.functions.save_graph)
-#         self.pushButton_leaderboard.clicked.connect(self.functions.show_leaderboard_page)
-#         self.pushButton_force_mode.clicked.connect(self.functions.force_mode)
-#         self.pushButton_home.clicked.connect(self.functions.show_input_page)
-#         self.pushButton_directed.clicked.connect(self.functions.select_directed)
-#         self.pushButton_undirected.clicked.connect(self.functions.select_undirected)
-#         self.pushButton_clear_DFS.clicked.connect(self.functions.DFS_clear)
-#         self.pushButton_clear_BFS.clicked.connect(self.functions.BFS_clear)
-#         self.pushButton_clear_DIJKSTRA.clicked.connect(self.functions.DIJKSTRA_clear)
-#         self.pushButton_user_algorithm.clicked.connect(self.functions.run_custom_algorithm)
-#
-#
-#     def setup_key_timer(self):
-#         """Creearea unui timer pentru taste
-#
-#         Pentru a optimiza trimiterea datelor grafului catre engine, se
-#         implementeaza un key timer pentru a impiedica trimiterea datelor la
-#         fiecare tasta apasata. Datele vor fi trimise la 0.8 secude dupa oprirea
-#         din tastat, in cazul in care se apasa o tasta inainte de 0.8 secunde
-#         de la ultima apasare timer-ul se va reseta. Astfel se vor operatiile
-#         de manipulare a datelor grafului se vor efectua de mai putine ori.
-#         """
-#
-#         self.keyTimer = QTimer()
-#         self.keyTimer.setSingleShot(True)
-#         self.keyTimer.setInterval(800)
-#         self.keyTimer.timeout.connect(self.functions.send_data)
-#
-#     def eventFilter(self, obj, event):
-#         """Filtrarea event-urilor aplicatiei
-#
-#         Event-urile importante provin de la 2 atribute : textEdit_node_data
-#         si frame_actions_btns.
-#         De la textEdit_node_data se va manipula event-ul de KeyPress, de
-#         fiecare data cand o tasta este apasata in interiorul textEdit_node_data
-#         se va reseta timer-ul pentru tastat. Alte event-uri de KeyPress nu sunt
-#         relevante.
-#         De la frame_actions_btns se vor manipula event-urile : MouseButtonDblClick,
-#         MouseButtonPress, MouseMove . Primul event va maximiza / micsora aplicatia
-#         in cazul unui dublu click pe frame-ul superior. Cel de-al doilea event tine
-#         minte pozitia in care se apasa frame-ul superior pentru ca mai apoi sa fie
-#         folosita de event-ul MouseMove puntru a muta window-ul aplicatiei, in cazul
-#         miscarii de mouse-ului.
-#
-#         Parametrii
-#         ----------
-#         obj : QObject
-#             obiectul care trimite eventul
-#         event : QEvent
-#             tipul de event
-#         """
-#
-#         if obj == self.textEdit_node_data and event.type() == QEvent.KeyPress:
-#             self.keyTimer.start()
-#
-#         elif obj == self.frame_actions_btns:
-#
-#             if event.type() == QEvent.MouseButtonDblClick:
-#                 self.functions.maximize_restore()
-#
-#             elif event.type() == QEvent.MouseButtonPress:
-#                 self.drag_pos = event.pos()
-#
-#             elif event.type() == QEvent.MouseMove:
-#                 if not self.isMaximized():
-#                     self.move(event.globalPos() - self.drag_pos)
-#                 # else:
-#                 #     self.functions.maximize_restore()
-#                 #     #self.move(self.drag_pos)
-#                 #     #print(ratio)
-#                 #     # TODO: check bug
-#
-#         return super(MainWindow, self).eventFilter(obj, event)

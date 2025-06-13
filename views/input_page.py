@@ -65,7 +65,7 @@ class InputPage(QtWidgets.QFrame):
 
         # Set labels
         _translate = QtCore.QCoreApplication.translate
-        self.label_node_data.setText(_translate("InputPage", "Enter node data"))
+        self.label_node_data.setText(_translate("InputPage", "Graph Data"))
         self.pushButton_generate.setText(_translate("InputPage", "Generate Graph"))
 
     def generate_graph(self):
@@ -86,9 +86,9 @@ class InputPage(QtWidgets.QFrame):
             import traceback
             traceback.print_exc()
 
-    def showEvent(self, event):
-        try:
-            super().showEvent(event)
-            self.show_page.emit()
-        except RuntimeError:
-            pass
+    # def showEvent(self, event):
+    #     try:
+    #         super().showEvent(event)
+    #         self.show_page.emit()
+    #     except RuntimeError:
+    #         pass

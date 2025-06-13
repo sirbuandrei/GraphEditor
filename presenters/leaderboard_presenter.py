@@ -10,7 +10,9 @@ class LeaderboardPresenter:
         self.leaderboard_page.show_page.connect(self.show_leaderboard)
 
     def show_leaderboard(self):
+        print("trying to get leaderboard ...")
         leaderboard = self.leaderboard_model.get_leaderboard()
+        print(leaderboard)
         self.leaderboard_page.tableWidget_leaderboard.setRowCount(len(leaderboard))
 
         if not bool(leaderboard):

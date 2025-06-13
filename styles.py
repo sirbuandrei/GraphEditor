@@ -10,5 +10,5 @@ class Styles:
     light_central_widget_style = "background-color: %s;" % LIGHT_MAIN_COLOR
     light_frames_style = "\n    QFrame{ background-color: %s; border-radius: 10px; }\n    " % LIGHT_OTHER_COLOR
     light_graphics_view_style = "\n    QGraphicsView{ background-color: %s; border-radius: 10px; }\n    " % LIGHT_OTHER_COLOR
-    btn_directed_undirected_clicked = "\n    QPushButton{ background-color: transparent; border-radius: 10px; color: white; }\n    QPushButton::hover{ background-color: %s; }" % BUTTON_HOVER_COLOR
-    btn_directed_undirected_non_clicked = "border: 2px solid white; border-radius: 15px; color: white;"
+    btn_directed_undirected_non_clicked = "\n    QPushButton{ background-color: transparent; border-radius: 10px; color: white; }\n    QPushButton::hover{ background-color: %s; }" % BUTTON_HOVER_COLOR
+    btn_directed_undirected_clicked = "border: 2px solid white; border-radius: 15px; color: white;"
