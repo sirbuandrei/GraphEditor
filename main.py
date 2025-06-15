@@ -2,8 +2,11 @@ import sys
 
 from PyQt5.QtWidgets import QApplication
 
+import firebase_admin
+from firebase_admin import credentials
+
 from models.graph_model import GraphModel
-from models.leaderboard import Leaderboard
+from models.leaderboard import LeaderboardModel
 from models.user_model import UserModel
 
 from views.config_page import ConfigPage
@@ -17,8 +20,7 @@ from presenters.login_presenter import LoginPresenter
 from presenters.leaderboard_presenter import LeaderboardPresenter
 from presenters.input_presenter import InputPresenter
 from presenters.graph_presenter import GraphPresenter
-
-from utils.coordinator import Coordinator
+from presenters.coordinator import Coordinator
 
 #counter = 0  # PROGRESS BAR COUNTER
 
@@ -344,15 +346,21 @@ from utils.coordinator import Coordinator
 #
 #         counter += 5
 
+DATABASE = 'https://graph-editor-database-default-rtdb.europe-west1.firebasedatabase.app/'
+KEY_PATH = r"C:\Users\andre\OneDrive\Documents\GitHub\GraphEditor\FirebaseKey\graph-editor-database-firebase-adminsdk-fbsvc-cecf4ef96d.json"
+API_KEY = 'AIzaSyAp5_l7wA6a__54DT8mUfH7RlNyoMLrHLI'
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    graph_model = GraphModel()
-    #user_model = UserModel()
-    #leaderboard_model = Leaderboard()
+    cred = credentials.Certificate(KEY_PATH)
+    firebase_app = firebase_admin.initialize_app(cred, {'databaseURL': DATABASE})
 
-    #login_screen = LoginScreen()
+    graph_model = GraphModel()
+    user_model = UserModel(API_KEY)
+    leaderboard_model = LeaderboardModel()
+
+    login_screen = LoginScreen()
     input_page = InputPage()
     config_page = ConfigPage()
     leaderboard_page = LeaderboardPage()
@@ -361,17 +369,18 @@ if __name__ == "__main__":
 
     main_window.set_pages(input_page, config_page, leaderboard_page, graph_view)
 
-    #leaderboard_presenter = LeaderboardPresenter(leaderboard_page, leaderboard_model)
+    leaderboard_presenter = LeaderboardPresenter(leaderboard_page, leaderboard_model)
     input_presenter = InputPresenter(input_page, graph_model)
     graph_presenter = GraphPresenter(graph_view, graph_model)
-
     coordinator = Coordinator(config_page, graph_view, graph_model)
 
-    def show_main_window(user_id):
-        main_window.set_user_id(user_id)
+    def start_app(user_id):
+        print(user_id)
+        coordinator.set_current_user(user_id)
+        # main_window.set_pages()
+        # splash screen.show()
         main_window.show()
 
-    show_main_window("123")
-    #login_presenter = LoginPresenter(login_screen, user_model, on_login_success=show_main_window)
+    login_presenter = LoginPresenter(login_screen, user_model, on_login_success=start_app)
 
     sys.exit(app.exec_())

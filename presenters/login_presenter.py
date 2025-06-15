@@ -1,7 +1,7 @@
 class LoginPresenter:
     def __init__(self, login_screen, user_model, on_login_success):
         self.login_screen = login_screen
-        self.user = user_model
+        self.user_model = user_model
         self.on_login_success = on_login_success
 
         self.login_screen.login_attempt.connect(self.handle_login)
@@ -13,7 +13,7 @@ class LoginPresenter:
             self.login_screen.label_error.setText("Please enter the password and email")
             return
 
-        success, result = self.user.login(email, password)
+        success, result = self.user_model.login(email, password)
 
         if success:
             self.on_login_success(result)
@@ -33,7 +33,7 @@ class LoginPresenter:
             self.login_screen.label_error.setText("Password must be at least 6 characters.")
             return
 
-        success, result = self.user.register(email, password)
+        success, error = self.user_model.register(email, password)
 
         if success:
             self.login_screen.label_error.setStyleSheet("color: lightgreen; font: 10pt 'Segoe UI';")
@@ -41,4 +41,4 @@ class LoginPresenter:
             self.login_screen.lineEdit_password.setText("")
         else:
             self.login_screen.label_error.setStyleSheet("color: red; font: 10pt 'Segoe UI';")
-            self.login_screen.label_error.setText(result)
+            self.login_screen.label_error.setText(error)

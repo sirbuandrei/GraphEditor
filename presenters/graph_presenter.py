@@ -2,8 +2,8 @@ import random
 
 from PyQt5.QtCore import QPointF, QRectF, QObject
 
-from views.edge import Edge
-from views.node import LightweightNode
+from views.items.edge import Edge
+from views.items.node import LightweightNode
 
 
 class GraphPresenter(QObject):

@@ -1,31 +1,25 @@
-from firebase_admin import firestore, auth
+from firebase_admin import db, auth
 
 
-class Leaderboard:
+class LeaderboardModel:
     def __init__(self):
-        self.db = firestore.client()
+        self.ref = db.reference('leaderboard')
 
     def get_leaderboard(self):
         try:
-            db = firestore.client()
-            users_ref = db.collection("leaderboard")
-            docs = users_ref.stream()
+            data = self.ref.get()
 
-            if not docs:
+            if not data:
                 return []
 
-            return []
+            result = []
+            for id, entry in data.items():
+                email = auth.get_user(id).email
+                points = entry.get('points', 0)
+                result.append((email, points))
 
-            leaderboard_list = []
-            try:
-                for doc in docs:
-                    email = auth.get_user(doc.id).email
-                    leaderboard_list.append({'email': email, 'score': int(doc.to_dict()['Points'])})
-
-            except Exception as e:
-                print(f"Error fetching user data: {e}")
-
-            return sorted(leaderboard_list, key=lambda x: x['score'], reverse=True)
+            result.sort(key=lambda x: x[1], reverse=True)
+            return result
 
         except Exception as e:
             print(f"Error fetching leaderboard data: {e}")

@@ -13,6 +13,9 @@ class GraphModel(QObject):
         self.nodes = set()
         self.edges = {}
 
+    def reward_point(self):
+        ...
+
     def set_radius(self, radius):
         self.current_radius = radius
 

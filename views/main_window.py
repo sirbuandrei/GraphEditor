@@ -1,12 +1,10 @@
-import time
-
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow
 from qtwidgets import AnimatedToggle
 
-from styles import Styles
+from utils.styles import Styles
 
 
 class MainWindow(QMainWindow):

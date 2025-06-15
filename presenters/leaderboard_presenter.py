@@ -10,21 +10,8 @@ class LeaderboardPresenter:
         self.leaderboard_page.show_page.connect(self.show_leaderboard)
 
     def show_leaderboard(self):
-        print("trying to get leaderboard ...")
         leaderboard = self.leaderboard_model.get_leaderboard()
         print(leaderboard)
-        self.leaderboard_page.tableWidget_leaderboard.setRowCount(len(leaderboard))
-
-        if not bool(leaderboard):
-            return
-
-        for row, entry in enumerate(leaderboard):
-            email_item = QTableWidgetItem(str(entry['email']))
-            score_item = QTableWidgetItem(str(entry['score']))
-            score_item.setTextAlignment(Qt.AlignCenter)
-
-            self.leaderboard_page.tableWidget_leaderboard.setItem(row, 0, email_item)
-            self.leaderboard_page.tableWidget_leaderboard.setItem(row, 1, score_item)
 
     def update_leaderboard(self):
         ...

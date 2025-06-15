@@ -68,8 +68,8 @@ class LoginScreen(QMainWindow):
 
         self.pushButton_maximize = QtWidgets.QPushButton(self.frame_btns)
         self.pushButton_maximize.setIcon(QtGui.QIcon("icons/cil-window-maximize.png"))
-        self.pushButton_maximize.setMinimumSize(QtCore.QSize(24, 24))
-        self.pushButton_maximize.setMaximumSize(QtCore.QSize(24, 24))
+        self.pushButton_maximize.setMinimumSize(QtCore.QSize(25, 25))
+        self.pushButton_maximize.setMaximumSize(QtCore.QSize(25, 25))
         self.pushButton_maximize.setStyleSheet("""
             QPushButton { background-color: transparent; border: none; }
             QPushButton:hover { background-color: rgb(55, 56, 59); }
@@ -106,7 +106,7 @@ class LoginScreen(QMainWindow):
         self.dropShadowFrame.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self.verticalLayout = QtWidgets.QVBoxLayout(self.dropShadowFrame)
-        self.verticalLayout.setSpacing(15)
+        self.verticalLayout.setSpacing(10)
         self.verticalLayout.setContentsMargins(30, 30, 30, 30)
 
         self.lineEdit_email = QtWidgets.QLineEdit(self.dropShadowFrame)
@@ -185,6 +185,15 @@ class LoginScreen(QMainWindow):
         self.label_error.setStyleSheet("color: red; font: 10pt 'Segoe UI';")
         self.label_error.setAlignment(QtCore.Qt.AlignCenter)
         self.verticalLayout.addWidget(self.label_error)
+
+        self.label_icons = QtWidgets.QLabel(self.dropShadowFrame)
+        self.label_icons.setAlignment(QtCore.Qt.AlignCenter)
+        #self.label_icons.setStyleSheet("color: white; font: 10pt 'Segoe UI';")
+        self.label_icons.setText('<span style="color:white; font: 10pt \'Segoe UI\';">'
+                                'Icons by <a href="https://icons8.com" style="color:white; text-decoration: underline;">Icons8</a>'
+                                '</span>')
+        self.label_icons.setOpenExternalLinks(True)
+        self.verticalLayout.addWidget(self.label_icons)
 
         # Center the login frame in both directions
         self.wrapper_layout = QtWidgets.QVBoxLayout()

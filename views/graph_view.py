@@ -1,5 +1,5 @@
 from PyQt5 import QtGui
-from PyQt5.QtCore import QRectF, QBasicTimer
+from PyQt5.QtCore import QRectF, QBasicTimer, Qt, pyqtSignal
 from PyQt5.QtGui import QPainter
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsTextItem
 
@@ -7,6 +7,8 @@ from utils.physics_engine import PhysicsEngine
 
 
 class GraphView(QGraphicsView):
+    space_pressed = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._physics_engine = PhysicsEngine(self)
@@ -80,8 +82,8 @@ class GraphView(QGraphicsView):
             edge.change_graph_type(directed)
 
     def resizeEvent(self, event):
-        super().resizeEvent(event)
         self.scene.setSceneRect(QRectF(0, 0, self.width(), self.height()))
+        return  super(GraphView, self).resizeEvent(event)
 
     def timerEvent(self, event):
         if self.scene and self.scene.isActive():
@@ -99,3 +101,8 @@ class GraphView(QGraphicsView):
             self._gravity = True if not self._gravity else ...
             self._physics_engine.update_connections()
         return super(GraphView, self).mouseReleaseEvent(event)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            self.space_pressed.emit()
+        return super(GraphView, self).keyPressEvent(event)

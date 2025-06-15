@@ -9,6 +9,7 @@ class ConfigPage(QtWidgets.QFrame):
     directed = pyqtSignal()
     undirected = pyqtSignal()
     run_algorithm = pyqtSignal()
+    edit_algorithm = pyqtSignal()
     create_custom_algorithm = pyqtSignal()
     save_graph = pyqtSignal()
     clear_algorithm = pyqtSignal()
@@ -32,6 +33,7 @@ class ConfigPage(QtWidgets.QFrame):
         self.pushButton_user_algorithm.clicked.connect(self.on_user_algorithm_clicked)
         self.pushButton_save_graph.clicked.connect(self.on_save_graph_clicked)
         self.pushButton_clear.clicked.connect(self.on_clear_clicked)
+        self.pushButton_edit_algorithm.clicked.connect(self.on_edit_algorithm_clicked)
 
     def on_force_mode_clicked(self):
         is_enabled = self.pushButton_force_mode.isChecked()  # If it's a toggle button
@@ -58,6 +60,9 @@ class ConfigPage(QtWidgets.QFrame):
 
     def on_clear_clicked(self):
         self.clear_algorithm.emit()
+
+    def on_edit_algorithm_clicked(self):
+        self.edit_algorithm.emit()
 
     def get_algorithm_type(self):
         return self.combo_box.currentText()
@@ -179,7 +184,7 @@ class ConfigPage(QtWidgets.QFrame):
         self.combo_box = QtWidgets.QComboBox(self.frame_algorithm)
         font = QtGui.QFont()
         font.setFamily("Happy School")
-        font.setPointSize(13)
+        font.setPointSize(12)
         self.combo_box.setFont(font)
         self.combo_box.setMinimumHeight(42)
         self.combo_box.setStyleSheet("""
