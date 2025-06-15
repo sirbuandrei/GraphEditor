@@ -3,6 +3,7 @@ import types
 from PyQt5.QtCore import QVariantAnimation, QEasingCurve, QSequentialAnimationGroup
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QFileDialog, QApplication
+from firebase_admin import db
 
 from utils.styles import Styles
 from utils.algorithms_manager import AlgorithmsManager
@@ -90,10 +91,32 @@ class Coordinator:
             self.create_animation_sequence(steps)
 
     def reward_point(self):
-        ...
+        try:
+            ref = db.reference(f'leaderboard/{self.user_id}')
+            data = ref.get()
+
+            if data and 'points' in data:
+                new_points = data['points'] + 1
+            else:
+                new_points = 1
+
+            ref.set({'points': new_points})
+        except Exception as e:
+            print(str(e))
 
     def subtract_point(self):
-        ...
+        try:
+            ref = db.reference(f'leaderboard/{self.user_id}')
+            data = ref.get()
+
+            if data and 'points' in data:
+                new_points = max(0, data['points'] - 1)
+            else:
+                new_points = 0
+
+            ref.set({'points': new_points})
+        except Exception as e:
+            print(str(e))
 
     def create_animation_sequence(self, steps):
         """Create animations based on yield command sequence"""

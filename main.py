@@ -6,7 +6,7 @@ import firebase_admin
 from firebase_admin import credentials
 
 from models.graph_model import GraphModel
-from models.leaderboard import LeaderboardModel
+from models.leaderboard_model import LeaderboardModel
 from models.user_model import UserModel
 
 from views.config_page import ConfigPage
@@ -347,7 +347,7 @@ from presenters.coordinator import Coordinator
 #         counter += 5
 
 DATABASE = 'https://graph-editor-database-default-rtdb.europe-west1.firebasedatabase.app/'
-KEY_PATH = r"C:\Users\andre\OneDrive\Documents\GitHub\GraphEditor\FirebaseKey\graph-editor-database-firebase-adminsdk-fbsvc-cecf4ef96d.json"
+KEY_PATH = r"C:\Users\andre\OneDrive\Documents\GitHub\GraphEditor\FirebaseKey\graph-editor-database-firebase-adminsdk-fbsvc-1b066eac85.json"
 API_KEY = 'AIzaSyAp5_l7wA6a__54DT8mUfH7RlNyoMLrHLI'
 
 if __name__ == "__main__":
@@ -367,7 +367,7 @@ if __name__ == "__main__":
     graph_view = GraphView()
     main_window = MainWindow()
 
-    main_window.set_pages(input_page, config_page, leaderboard_page, graph_view)
+    #main_window.set_pages(input_page, config_page, leaderboard_page, graph_view)
 
     leaderboard_presenter = LeaderboardPresenter(leaderboard_page, leaderboard_model)
     input_presenter = InputPresenter(input_page, graph_model)
@@ -377,7 +377,7 @@ if __name__ == "__main__":
     def start_app(user_id):
         print(user_id)
         coordinator.set_current_user(user_id)
-        # main_window.set_pages()
+        main_window.set_pages(input_page, config_page, leaderboard_page, graph_view)
         # splash screen.show()
         main_window.show()
 

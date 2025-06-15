@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QProgressBar
 
 
 class LeaderboardPage(QtWidgets.QFrame):
@@ -84,7 +85,40 @@ class LeaderboardPage(QtWidgets.QFrame):
                     }
                 """)
 
+        self.loadingBar = QProgressBar(self)
+        self.loadingBar.setRange(0, 0)  # Indeterminate mode
+        self.loadingBar.setTextVisible(False)
+        self.loadingBar.setFixedHeight(20)
+        self.loadingBar.setStyleSheet("""
+            QProgressBar {
+                border: 1px solid #bbb;
+                border-radius: 10px;
+                background-color: #444;
+            }
+            QProgressBar::chunk {
+                background-color: #7289da;
+                border-radius: 10px;
+            }
+        """)
+        self.loadingBar.hide()
+        self.verticalLayout_leaderboard.addWidget(self.loadingBar)
+
         self.verticalLayout_leaderboard.addWidget(self.tableWidget_leaderboard)
+
+    def set_loading(self, loading: bool):
+        self.loadingBar.setVisible(loading)
+        self.tableWidget_leaderboard.setDisabled(loading)
+
+    def update_leaderboard(self, data):
+        self.tableWidget_leaderboard.setRowCount(len(data))
+        for row, (email, points) in enumerate(data):
+            email_item = QtWidgets.QTableWidgetItem(email)
+            points_item = QtWidgets.QTableWidgetItem(str(points))
+
+            points_item.setTextAlignment(QtCore.Qt.AlignCenter)
+
+            self.tableWidget_leaderboard.setItem(row, 0, email_item)
+            self.tableWidget_leaderboard.setItem(row, 1, points_item)
 
     def showEvent(self, event):
         super().showEvent(event)
