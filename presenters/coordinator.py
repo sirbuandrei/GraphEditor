@@ -10,6 +10,42 @@ from utils.algorithms_manager import AlgorithmsManager
 from views.items.custom_algorithm_dialog import CustomAlgorithmDialog
 from views.items.user_input_dialog import UserInputDialog
 
+EDITOR_DEFAULT_TEXT = """def your_algorithm(graph, algorithm_input):
+    \"\"\" 
+    The name of your algorithm will be taken form the function name,
+    so please rename the function
+    
+    The parameters passed are an adjacent list of the current graph,
+    and a str of the user input
+    
+    graph: dict
+    algorithm_input: str
+    
+    The code must return a list and a str
+    The animation steps must return a list of steps in dictionary format,
+    of the items that want to be animated.
+    eg: 
+    animation_steps.append({"item": '1', "color": "orange"})
+    animation_steps.append({"item": '2', "color": "yellow"})
+    This will animate node with string '1' from it's current color to orange,
+    then will animate node with string '2' from it's current color to yellow,
+    if they exist.
+    
+    The adjacent list node are in str format, and the weights in int
+    eg: {'1': [('2', 1), ('3': 2)], '2': [('4', 3)]}
+    This means that node '1' has an edge of weight 1 to the node '2',
+    that node '1' has an edge of weight 2 to the node '3', and
+    that node '2' has an edge of weight 3 to the node '4'
+    
+    Also the adjacent list takes into consideration if the graph is directed or
+    undirected.
+    
+    The output is the string that is compared with the user input before
+    the animation stars. If the user inputs the exact string is rewarded a point.
+    Otherwise there will be a penalty of one point.
+    \"\"\"
+    return animation_steps, output"""
+
 
 class Coordinator:
     def __init__(self, view1, view2, model):
@@ -74,21 +110,24 @@ class Coordinator:
         if not algorithm_input:
             return
 
-        steps, correct_output = self.algorithm_manager.run_algorithm(algorithm_type, self.graph_model.get_edges(),
-                                                          self.graph_model.get_directed(), algorithm_input)
+        try:
+            steps, correct_output = self.algorithm_manager.run_algorithm(algorithm_type, self.graph_model.get_edges(),
+                                                              self.graph_model.get_directed(), algorithm_input)
 
-        input_dialog = UserInputDialog(f"Enter your response for the {algorithm_type} algorithm: ")
-        if input_dialog.exec_():
-            user_response = input_dialog.getText()
+            input_dialog = UserInputDialog(f"Enter your response for the {algorithm_type} algorithm: ")
+            if input_dialog.exec_():
+                user_response = input_dialog.getText()
 
-            if user_response == correct_output:
-                self.graph_view.set_text("Correct", QColor("#00ff66"))
-                self.reward_point()
-            else:
-                self.graph_view.set_text("The actual path is: " + correct_output,  QColor("#ff4444"))
-                self.subtract_point()
+                if user_response == correct_output:
+                    self.graph_view.set_text("Correct", QColor("#00ff66"))
+                    self.reward_point()
+                else:
+                    self.graph_view.set_text("The actual path is: " + correct_output,  QColor("#ff4444"))
+                    self.subtract_point()
 
-            self.create_animation_sequence(steps)
+                self.create_animation_sequence(steps)
+        except Exception as e:
+            print(str(e))
 
     def reward_point(self):
         try:
@@ -181,7 +220,7 @@ class Coordinator:
         self._animation_group.clear()
 
     def create_custom_algorithm(self):
-        custom_algorithm_dialog = CustomAlgorithmDialog()
+        custom_algorithm_dialog = CustomAlgorithmDialog(EDITOR_DEFAULT_TEXT)
         if custom_algorithm_dialog.exec_():
             algorithm_code = custom_algorithm_dialog.get_full_code()
 

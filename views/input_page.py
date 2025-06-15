@@ -44,6 +44,7 @@ class InputPage(QtWidgets.QFrame):
         self.pushButton_generate = QtWidgets.QPushButton(self)
         self.pushButton_generate.setMinimumSize(QtCore.QSize(0, 40))
         self.pushButton_generate.setMaximumSize(QtCore.QSize(16777215, 40))
+        self.pushButton_generate.setIcon(QtGui.QIcon("icons/icons8-enter.png"))
         self.pushButton_generate.setStyleSheet("""
             QPushButton {
                 background-color: #7289da;

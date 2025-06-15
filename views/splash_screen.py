@@ -1,3 +1,5 @@
+# counter = 0
+#
 # class SplashScreen(QMainWindow):
 #     """SpalshScreen-ul de inceput"""
 #

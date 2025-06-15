@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QProgressBar
+from PyQt5.QtWidgets import QProgressBar, QWidget, QHBoxLayout
 
 
 class LeaderboardPage(QtWidgets.QFrame):
@@ -85,29 +85,36 @@ class LeaderboardPage(QtWidgets.QFrame):
                     }
                 """)
 
-        self.loadingBar = QProgressBar(self)
-        self.loadingBar.setRange(0, 0)  # Indeterminate mode
-        self.loadingBar.setTextVisible(False)
-        self.loadingBar.setFixedHeight(20)
-        self.loadingBar.setStyleSheet("""
+        self.loading_container = QWidget(self)
+        self.loading_layout = QHBoxLayout(self.loading_container)
+        self.loading_layout.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Progress bar
+        self.progress_bar = QProgressBar(self.loading_container)
+        self.progress_bar.setFixedSize(120, 8)
+        self.progress_bar.setRange(0, 0)  # Indeterminate
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setStyleSheet("""
             QProgressBar {
-                border: 1px solid #bbb;
-                border-radius: 10px;
-                background-color: #444;
+                border: none;
+                border-radius: 4px;
+                background-color: #d3d3d3;
             }
             QProgressBar::chunk {
                 background-color: #7289da;
-                border-radius: 10px;
+                border-radius: 4px;
             }
         """)
-        self.loadingBar.hide()
-        self.verticalLayout_leaderboard.addWidget(self.loadingBar)
+
+        self.loading_layout.addWidget(self.progress_bar)
+        self.verticalLayout_leaderboard.addWidget(self.loading_container)
+        self.loading_container.hide()
 
         self.verticalLayout_leaderboard.addWidget(self.tableWidget_leaderboard)
 
     def set_loading(self, loading: bool):
-        self.loadingBar.setVisible(loading)
-        self.tableWidget_leaderboard.setDisabled(loading)
+        self.loading_container.setVisible(loading)
+        self.tableWidget_leaderboard.setVisible(not loading)
 
     def update_leaderboard(self, data):
         self.tableWidget_leaderboard.setRowCount(len(data))
@@ -123,3 +130,8 @@ class LeaderboardPage(QtWidgets.QFrame):
     def showEvent(self, event):
         super().showEvent(event)
         self.show_page.emit()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.tableWidget_leaderboard.clearContents()
+        self.tableWidget_leaderboard.setRowCount(0)

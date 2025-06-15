@@ -21,7 +21,6 @@ def bfs(graph, start_node):
 
     while queue:
         node = queue.popleft()
-        animation_steps.append({"item": node, "color": "yellow"})
 
         for neighbor, _ in graph[node]:
             if neighbor not in visited:
@@ -74,17 +73,14 @@ def dijkstra(graph, algorithm_input):
     items = algorithm_input.split(' ')
 
     if len(items) != 2:
-        return
+        return [], 'Input should be in the format: start end'
 
-    if items[0] not in graph or items[1] not in graph:
-        return
-
-    start_node = items[0]
-    end_node = items[1]
+    start_node, end_node = items
+    if start_node not in graph or end_node not in graph:
+        return [], 'Start or end node not in graph.'
 
     distances = {node: float('inf') for node in graph}
     previous = {node: None for node in graph}
-    came_from_edge = {}
     distances[start_node] = 0
 
     priority_queue = [(0, start_node)]
@@ -98,31 +94,33 @@ def dijkstra(graph, algorithm_input):
             continue
         visited.add(current_node)
 
+        # Visit node
         animation_steps.append({"item": current_node, "color": "yellow"})
 
         for neighbor, weight in graph.get(current_node, []):
-            edge_tuple = (current_node, neighbor)
             if neighbor in visited:
                 continue
 
-            animation_steps.append({"item": edge_tuple, "color": "orange"})
+            edge = (current_node, neighbor)
+            animation_steps.append({"item": edge, "color": "orange"})  # considering edge
 
-            distance = current_distance + weight
-            if distance < distances[neighbor]:
+            new_distance = current_distance + weight
+            if new_distance < distances[neighbor]:
                 if previous[neighbor] is not None:
                     old_edge = (previous[neighbor], neighbor)
-                    animation_steps.append({"item": old_edge, "color": "red"})
+                    animation_steps.append({"item": old_edge, "color": "red"})  # unmark old path
 
-                distances[neighbor] = distance
+                distances[neighbor] = new_distance
                 previous[neighbor] = current_node
-                came_from_edge[neighbor] = edge_tuple
 
-                animation_steps.append({"item": neighbor, "color": "lightblue"})
-                animation_steps.append({"item": edge_tuple, "color": "green"})
+                animation_steps.append({"item": neighbor, "color": "lightblue"})  # updated neighbor
+                animation_steps.append({"item": edge, "color": "green"})          # confirmed edge
 
+                heapq.heappush(priority_queue, (new_distance, neighbor))
+
+        # Done processing node
         animation_steps.append({"item": current_node, "color": "gray"})
 
-    # Reconstruct path
     path = []
     current = end_node
     while current is not None:
@@ -135,9 +133,8 @@ def dijkstra(graph, algorithm_input):
             animation_steps.append({"item": path[i], "color": "blue"})
             animation_steps.append({"item": (path[i], path[i + 1]), "color": "blue"})
         animation_steps.append({"item": path[-1], "color": "blue"})
-        return animation_steps, ''
 
-    return animation_steps, ''
+    return animation_steps, ' '.join(x for x in path)
 
 
 class AlgorithmsManager:

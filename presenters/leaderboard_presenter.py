@@ -1,5 +1,4 @@
-from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal
-from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtCore import QThread
 
 
 class LeaderboardPresenter:
@@ -8,18 +7,18 @@ class LeaderboardPresenter:
         self.leaderboard_model = leaderboard_model
 
         self.leaderboard_page.show_page.connect(self.show_leaderboard)
-        self.leaderboard_model.finished.connect(self.on_leaderboard_loaded)
 
     def show_leaderboard(self):
         self.leaderboard_page.set_loading(True)
 
         self.thread = QThread()
-        self.leaderboard_model.moveToThread(self.thread)
+        self.worker = self.leaderboard_model()
+        self.worker.moveToThread(self.thread)
 
-        self.thread.started.connect(self.leaderboard_model.get_leaderboard)
-        self.leaderboard_model.finished.connect(self.thread.quit)
-        #self.leaderboard_model.finished.connect(self.leaderboard_model.deleteLater)
-        #self.leaderboard_model.finished.connect(self.on_leaderboard_loaded)
+        self.thread.started.connect(self.worker.get_leaderboard)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.on_leaderboard_loaded)
+        self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
 
         self.thread.start()

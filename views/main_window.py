@@ -34,14 +34,16 @@ class MainWindow(QMainWindow):
 
         self.frame_actions_btns.installEventFilter(self)
 
-        self.dark_theme = False
-        self.pushButton_theme.click()
+        self.centralwidget.setStyleSheet(Styles.dark_central_widget_style)
+        self.frame_central_top.setStyleSheet(Styles.dark_frames_style)
+        #self.dark_theme = False
+        #self.pushButton_theme.click()
 
     def setup_button_functions(self):
         self.pushButton_close.clicked.connect(lambda: self.close())
         self.pushButton_minimize.clicked.connect(lambda: self.showMinimized())
         self.pushButton_maximize.clicked.connect(self.maximize_restore)
-        self.pushButton_theme.clicked.connect(self.change_theme)
+        #self.pushButton_theme.clicked.connect(self.change_theme)
         self.pushButton_home.clicked.connect(self.show_input_page)
         self.pushButton_leaderboard.clicked.connect(self.show_leaderboard_page)
         self.pushButton_settings.clicked.connect(self.show_settings_page)
@@ -267,12 +269,12 @@ class MainWindow(QMainWindow):
         self.label_mode.setStyleSheet("QLabel{\n    color: white;\n}")
         self.label_mode.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.label_mode.setObjectName("label_mode")
-        self.horizontalLayout_5.addWidget(self.label_mode)
-        self.pushButton_theme = AnimatedToggle((self.frame_mode), pulse_checked_color="#95a5de", checked_color="#7289da")
-        self.pushButton_theme.setMinimumSize(QtCore.QSize(55, 30))
-        self.pushButton_theme.setMaximumSize(QtCore.QSize(55, 30))
-        self.pushButton_theme.setObjectName("pushButton_theme")
-        self.horizontalLayout_5.addWidget(self.pushButton_theme)
+        # self.horizontalLayout_5.addWidget(self.label_mode)
+        # self.pushButton_theme = AnimatedToggle((self.frame_mode), pulse_checked_color="#95a5de", checked_color="#7289da")
+        # self.pushButton_theme.setMinimumSize(QtCore.QSize(55, 30))
+        # self.pushButton_theme.setMaximumSize(QtCore.QSize(55, 30))
+        # self.pushButton_theme.setObjectName("pushButton_theme")
+        # self.horizontalLayout_5.addWidget(self.pushButton_theme)
         self.horizontalLayout_4.addWidget(self.frame_mode)
         self.verticalLayout_2.addWidget(self.frame_central_top)
         self.frame_graph = QtWidgets.QFrame(self.frame_central)
@@ -701,4 +703,4 @@ class MainWindow(QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label_title.setText(_translate("MainWindow", "GRAPH EDITOR"))
-        self.label_mode.setText(_translate("MainWindow", "DARK MODE"))
+        #self.label_mode.setText(_translate("MainWindow", "DARK MODE"))
