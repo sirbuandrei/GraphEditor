@@ -54,7 +54,7 @@ class SplashScreen(QMainWindow):
         counter += 5
 
     def setupUi(self, SplashScreen):
-        SplashScreen.setObjectName("SplashScreen")
+        SplashScreen.setObjectName("Graph Editor")
         SplashScreen.resize(550, 350)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(68)

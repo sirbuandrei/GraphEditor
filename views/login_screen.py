@@ -15,7 +15,7 @@ class LoginScreen(QMainWindow):
         self.show()
     
     def setup_ui(self):
-        self.setObjectName("self")
+        self.setObjectName("Graph Editor")
         self.resize(400, 300)
         self.setMinimumSize(QtCore.QSize(400, 300))
 
@@ -144,16 +144,16 @@ class LoginScreen(QMainWindow):
         self.pushButton_login.setIconSize(QtCore.QSize(20, 20))
         self.pushButton_login.setStyleSheet("""
             QPushButton {
-                background-color: transparent;
+                background-color: #7289da;
                 border-radius: 10px;
                 color: white;
                 font: 63 14pt "Segoe UI Semibold";
             }
             QPushButton:hover {
-                background-color: rgb(44, 47, 51);
+                background-color: #95a5de;
             }
             QPushButton:pressed {
-                background-color: rgb(66, 69, 74);
+                background-color: #5b6eae;
             }
         """)
         self.verticalLayout.addWidget(self.pushButton_login)
@@ -166,16 +166,16 @@ class LoginScreen(QMainWindow):
         self.pushButton_register.setIconSize(QtCore.QSize(20, 20))
         self.pushButton_register.setStyleSheet("""
             QPushButton {
-                background-color: transparent;
+                background-color: #7289da;
                 border-radius: 10px;
                 color: white;
                 font: 63 14pt "Segoe UI Semibold";
             }
             QPushButton:hover {
-                background-color: rgb(44, 47, 51);
+                background-color: #95a5de;
             }
             QPushButton:pressed {
-                background-color: rgb(66, 69, 74);
+                background-color: #5b6eae;
             }
         """)
         self.verticalLayout.addWidget(self.pushButton_register)

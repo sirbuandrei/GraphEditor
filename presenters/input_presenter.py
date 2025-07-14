@@ -26,15 +26,15 @@ class InputPresenter(QObject):
                 if not _line:
                     continue
 
-                if len(_line) == 1 and _line[0] not in self.graph_model.nodes:
+                if len(_line) == 1 and _line[0] not in self.graph_model._nodes:
                     self.graph_model.add_node(_line[0])
 
                 elif len(_line) > 1:
-                    if _line[0] not in self.graph_model.nodes:
+                    if _line[0] not in self.graph_model._nodes:
                         self.graph_model.add_node(_line[0])
-                    if _line[1] not in self.graph_model.nodes:
+                    if _line[1] not in self.graph_model._nodes:
                         self.graph_model.add_node(_line[1])
-                    if (_line[0], _line[1]) not in self.graph_model.edges \
+                    if (_line[0], _line[1]) not in self.graph_model._edges \
                             and _line[0] is not _line[1]:
                         cost = _line[2] if len(_line) >= 3 else None
                         if cost is None or not cost.isdigit():

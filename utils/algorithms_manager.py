@@ -137,6 +137,23 @@ def dijkstra(graph, algorithm_input):
     return animation_steps, ' '.join(x for x in path)
 
 
+def build_adjacency_list(edges, directed):
+    graph = {}
+
+    for (from_node, to_node), cost in edges.items():
+        if from_node not in graph:
+            graph[from_node] = []
+        if to_node not in graph:
+            graph[to_node] = []
+
+    for (from_node, to_node), cost in edges.items():
+        graph[from_node].append((to_node, cost))
+        if not directed:
+            graph[to_node].append((from_node, cost))
+
+    return graph
+
+
 class AlgorithmsManager:
     def __init__(self):
         self._algorithms = {"Breadth First Search": bfs, "Depth First Search": dfs, "Shortest Path": dijkstra}
@@ -148,7 +165,7 @@ class AlgorithmsManager:
         self._algorithms[algorithm] = code
 
     def run_algorithm(self, algorithm_type, edges, is_directed, algorithm_input):
-        graph = self.build_adjacency_list(edges, is_directed)
+        graph = build_adjacency_list(edges, is_directed)
         print(graph)
         try:
             return self._algorithms[algorithm_type](graph, algorithm_input)
@@ -157,22 +174,3 @@ class AlgorithmsManager:
 
     def add_algorithm(self, algorithm_type, func):
         self._algorithms[algorithm_type] = func
-
-    def build_adjacency_list(self, edges, directed):
-        graph = {}
-
-        for (from_node, to_node), cost in edges.items():
-            if from_node not in graph:
-                graph[from_node] = []
-            if to_node not in graph:
-                graph[to_node] = []
-
-        for (from_node, to_node), cost in edges.items():
-            graph[from_node].append((to_node, cost))
-            if not directed:
-                graph[to_node].append((from_node, cost))
-
-        return graph
-
-
-

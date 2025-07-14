@@ -76,8 +76,8 @@ class PhysicsEngine:
                 connection.update(dx, dy)  # Applies spring force adjustment to node positions
 
         # Update visual paths for all edges in the view
-        # for edge in edges:
-        #     edge.update_path()
+        for edge in edges:
+            edge.update_path()
 
     def update_connections(self) -> None:
         """Clears all current connections. Connections will be re-established during physics simulation."""

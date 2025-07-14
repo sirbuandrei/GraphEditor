@@ -15,8 +15,8 @@ class GraphPresenter(QObject):
         self.graph_model.update_scene_items.connect(self.update_items)
 
     def update_items(self):
-        model_nodes = self.graph_model.nodes
-        model_edges = self.graph_model.edges
+        model_nodes = self.graph_model.get_nodes()
+        model_edges = self.graph_model.get_edges()
 
         current_nodes = self.get_nodes()
         current_edges = self.get_edges()

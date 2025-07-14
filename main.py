@@ -68,7 +68,6 @@ if __name__ == "__main__":
     leaderboard_page = LeaderboardPage()
     graph_view = GraphView()
     main_window = MainWindow()
-    #splash_screen = SplashScreen()
 
     leaderboard_presenter = LeaderboardPresenter(leaderboard_page, LeaderboardModel)
     input_presenter = InputPresenter(input_page, graph_model)
@@ -78,7 +77,9 @@ if __name__ == "__main__":
     def start_app(user_id):
         coordinator.set_current_user(user_id)
         main_window.set_pages(input_page, config_page, leaderboard_page, graph_view)
-        main_window.show()
+
+        splash_screen = SplashScreen(main_window.show)
+        splash_screen.show()
 
     login_presenter = LoginPresenter(login_screen, user_model, on_login_success=start_app)
 

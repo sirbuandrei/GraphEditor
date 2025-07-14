@@ -1,0 +1,6 @@
+PyYAML
+PyQt5
+qtwidgets
+QScintilla
+numpy
+firebase_admin

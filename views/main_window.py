@@ -109,7 +109,7 @@ class MainWindow(QMainWindow):
         return super().eventFilter(obj, event)
 
     def setup_ui(self):
-        self.setObjectName("MainWindow")
+        self.setObjectName("Graph Editor")
         self.resize(900, 600)
         self.setMinimumSize(QtCore.QSize(self.MINIMUM_WIDTH, self.MINIMUM_HEIGHT))
         self.centralwidget = QtWidgets.QWidget(self)
