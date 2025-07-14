@@ -1,6 +1,5 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QWidget
 
 
 class InputPage(QtWidgets.QFrame):
@@ -71,17 +70,8 @@ class InputPage(QtWidgets.QFrame):
 
     def generate_graph(self):
         try:
-            print("=== GENERATE GRAPH START ===")
             text = self.textEdit_node_data.toPlainText()
-            print(f"Text extracted: {text}")
-
-            print("About to emit signal...")
             self.send_data.emit(text)
-            print("Signal emitted successfully")
-
-            print(f"Generating graph with data: {text}")
-            print("=== GENERATE GRAPH END ===")
-
         except Exception as e:
             print(f"ERROR in generate_graph: {e}")
             import traceback

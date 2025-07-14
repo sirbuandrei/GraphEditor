@@ -188,7 +188,6 @@ class LoginScreen(QMainWindow):
 
         self.label_icons = QtWidgets.QLabel(self.dropShadowFrame)
         self.label_icons.setAlignment(QtCore.Qt.AlignCenter)
-        #self.label_icons.setStyleSheet("color: white; font: 10pt 'Segoe UI';")
         self.label_icons.setText('<span style="color:white; font: 10pt \'Segoe UI\';">'
                                 'Icons by <a href="https://icons8.com" style="color:white; text-decoration: underline;">Icons8</a>'
                                 '</span>')

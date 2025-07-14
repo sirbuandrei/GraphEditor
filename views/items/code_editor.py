@@ -1,5 +1,5 @@
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
-from PyQt5.QtGui import QColor, QFont, QTextCharFormat, QSyntaxHighlighter
+from PyQt5.QtGui import QColor, QFont
 
 class PyCharmLexer(QsciLexerPython):
     """Custom Python lexer with PyCharm-like colors"""
@@ -87,7 +87,7 @@ class PyCharmLexer(QsciLexerPython):
 
 
 class PythonEditor(QsciScintilla):
-    """Python editor with PyCharm-like appearance and behavior"""
+    """Python editor with PyCharm-like appearance"""
 
     def __init__(self, parent=None):
         super().__init__(parent)

@@ -1,6 +1,6 @@
 import random
 
-from PyQt5.QtCore import Qt, QRectF, QPointF, pyqtProperty, QPropertyAnimation
+from PyQt5.QtCore import Qt, QRectF, QPointF, pyqtProperty, QPropertyAnimation, pyqtSignal, QTimer, QObject
 from PyQt5.QtGui import QPen, QBrush, QColor, QFont
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QGraphicsItem, QWidget, QGraphicsSimpleTextItem, QGraphicsEffect, \
     QGraphicsColorizeEffect
@@ -84,8 +84,10 @@ class LightweightNode(QGraphicsItem):
         self._current_color = QColor("white")
         self._pen = QPen(Qt.white, 2, Qt.SolidLine)
         self._font = QFont('Segoe UI Semibold', 11)
+        self._connected_edges = []
 
         self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
         self.setZValue(2)
         self.setPos(pos.x(), pos.y())
 
@@ -105,6 +107,9 @@ class LightweightNode(QGraphicsItem):
         self.prepareGeometryChange()
         self._radius = radius
 
+    def add_edge(self, edge):
+        self._connected_edges.append(edge)
+
     def boundingRect(self):
         r = self._radius
         return QRectF(-r, -r, 2 * r, 2 * r)
@@ -116,6 +121,12 @@ class LightweightNode(QGraphicsItem):
 
         except Exception as e:
             print(f"Paint error: {e}")
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionChange:
+            for edge in self._connected_edges:
+                edge.update_path()
+        return super().itemChange(change, value)
 
     def color_change(self, color):
         self._pen.setColor(color)

@@ -3,10 +3,10 @@ import requests, json
 
 class UserModel:
     def __init__(self, API_KEY):
-        self.API_KEY = API_KEY
+        self._key = API_KEY
 
     def login(self, email, password):
-        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={self.API_KEY}"
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={self._key}"
         payload = {
             "email": email,
             "password": password,
@@ -20,7 +20,7 @@ class UserModel:
             return False, response.json()['error']['message']
 
     def register(self, email, password):
-        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={self.API_KEY}"
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={self._key}"
         payload = {
             "email": email,
             "password": password,

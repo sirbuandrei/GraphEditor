@@ -1,25 +1,41 @@
 import math
+from dataclasses import dataclass
 
 from PyQt5.QtCore import QPointF
 
+from views.items.node import LightweightNode
 
+
+@dataclass(repr=True, eq=False)
 class Connection:
-    def __init__(self, node1, node2, length):
-        self.node1 = node1
-        self.node2 = node2
-        self.length = length
+    __slots__ = ('node1', 'node2', 'length')
 
-    def update(self, dx, dy):
+    node1: LightweightNode
+    node2: LightweightNode
+    length: float
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Connection):
+            return NotImplemented
+        return (
+            (self.node1 is other.node1 and self.node2 is other.node2) or
+            (self.node1 is other.node2 and self.node2 is other.node1)
+        ) and self.length == other.length
+
+    def __hash__(self) -> int:
+        node_ids_hash = hash(frozenset({id(self.node1), id(self.node2)}))
+        return node_ids_hash ^ hash(self.length)
+
+    def update(self, dx: float, dy: float) -> None:
         d = math.sqrt(dx * dx + dy * dy)
         if d == 0:
             return
 
-        diff = self.length - d
-        percent = diff / d * 0.5
-        offset_x = dx * percent
-        offset_y = dy * percent
+        diff: float = self.length - d
+        percent: float = diff / d * 0.5
+        offset_x: float = dx * percent
+        offset_y: float = dy * percent
 
-        # Move nodes toward ideal connection distance
         current_pos1 = self.node1.pos()
         current_pos2 = self.node2.pos()
 
@@ -28,82 +44,125 @@ class Connection:
 
 
 class PhysicsEngine:
-    SOFTENING_CONSTANT = 0.15
-    G = 39.5
-    dt = 0.017
-    NODE_FIELD_RADIUS = 80
+    SOFTENING_CONSTANT: float = 0.15
+    G: float = 39.5
+    dt: float = 0.027
+    NODE_FIELD_RADIUS: int = 80
 
     def __init__(self, graph_view):
         self.graph_view = graph_view
-        self._connections = set()
+        self.connections = set()
 
-    def apply_physics(self):
+    def apply_physics(self) -> None:
         nodes = self.graph_view.get_nodes()
         edges = self.graph_view.get_edges()
 
         for node in nodes:
             if self.graph_view.get_gravity() and self.graph_view.get_force_mode():
-                force = self._calculate_force(node)
-                node.moveBy(force.x() * (self.dt ** 2),
-                            force.y() * (self.dt ** 2))
+                force_to_center = self._calculate_force_to_center(node)
+                node.moveBy(force_to_center.x() * self.dt,
+                            force_to_center.y() * self.dt)
                 node.update()
+
             self._check_collision(node, nodes)
 
+        # Apply spring forces from connections if force mode is enabled
         if self.graph_view.get_force_mode():
-            for connection in self._connections:
+            for connection in self.connections:
                 node1_pos = connection.node1.pos()
                 node2_pos = connection.node2.pos()
+                # Calculate vector from node1 to node2
+                dx, dy, _ = self._calculate_vector_and_angle(node1_pos, node2_pos)  # angle not needed here
+                connection.update(dx, dy)  # Applies spring force adjustment to node positions
 
-                dx, dy, angle = self._calculate_angle(node1_pos, node2_pos)
-                connection.update(dx, dy)
+        # Update visual paths for all edges in the view
+        # for edge in edges:
+        #     edge.update_path()
 
-        for edge in edges:
-            edge.update_path()
+    def update_connections(self) -> None:
+        """Clears all current connections. Connections will be re-established during physics simulation."""
+        self.connections.clear()
 
-    def update_connections(self):
-        self._connections.clear()
-        # for connection in self._connections:
-        #     if connection.node1 == node_deleted or connection.node2 == node_deleted:
-        #         print(f'Removing connection between {connection.node1.get_text()} and {connection.node2.get_text()}')
-        #         #self._connections.remove(connection)
+    def _check_collision(self, node: LightweightNode, all_nodes: set) -> None:
+        """Checks for collision between 'node' and other nodes in 'all_nodes'.
+           Adds connections if nodes are within NODE_FIELD_RADIUS and gravity is on.
+           Resolves direct overlaps otherwise.
+        """
+        for other_node in all_nodes:
+            if other_node is node:  # Skip self-collision check
+                continue
 
-    def _check_collision(self, node, nodes):
-        for other_node in nodes:
-            if other_node is not node:
+            dx, dy, _ = self._calculate_vector_and_angle(node.get_center(), other_node.get_center())
+            distance = math.sqrt(dx * dx + dy * dy)
 
-                dx, dy, alfa = self._calculate_angle(node.get_center(), other_node.get_center())
-                dsq = math.sqrt(dx * dx + dy * dy)
+            if distance == 0:  # Avoid division by zero if nodes are somehow at the exact same spot
+                continue
 
-                length = self.NODE_FIELD_RADIUS + node.get_radius()
-                if dsq <= length:
-                    if self.graph_view.get_gravity() and self._verify_connection(node, other_node):
-                        self._connections.add(Connection(node, other_node, length))
-                    else:
-                        overlap = dsq - node.get_radius() - self.NODE_FIELD_RADIUS
-                        node.moveBy(-0.5 * overlap * (node.x() - other_node.x()) / dsq,
-                                    -0.5 * overlap * (node.y() - other_node.y()) / dsq)
-                        other_node.moveBy(0.5 * overlap * (node.x() - other_node.x()) / dsq,
-                                          0.5 * overlap * (node.y() - other_node.y()) / dsq)
+            connection_radius = self.NODE_FIELD_RADIUS + node.get_radius()  # node.radius from property
 
-    def _verify_connection(self, node1, node2):
-        for connection in self._connections:
-            if (connection.node1 == node1 and connection.node2 == node2) or (connection.node2 == node1 and connection.node1 == node2):
+            if distance <= connection_radius:
+                if self.graph_view.get_gravity() and self._verify_connection(node, other_node):
+                    self.connections.add(Connection(node, other_node, connection_radius))
+                else:
+                    overlap = distance - node.get_radius() - self.NODE_FIELD_RADIUS
+                    node.moveBy(-0.5 * overlap * (node.x() - other_node.x()) / distance,
+                                -0.5 * overlap * (node.y() - other_node.y()) / distance)
+                    other_node.moveBy(0.5 * overlap * (node.x() - other_node.x()) / distance,
+                                      0.5 * overlap * (node.y() - other_node.y()) / distance)
+
+                physical_radii_sum = node.get_radius() + other_node.get_radius()
+                if distance < physical_radii_sum:  # Actual physical overlap
+                    overlap_amount = physical_radii_sum - distance
+                    move_x = 0.5 * overlap_amount * (dx / distance)
+                    move_y = 0.5 * overlap_amount * (dy / distance)
+
+                    node.moveBy(move_x, move_y)  # Move 'node' away from 'other_node'
+                    other_node.moveBy(-move_x, -move_y)  # Move 'other_node' away from 'node'
+                    node.update()
+                    other_node.update()
+
+    def _verify_connection(self, node1: LightweightNode, node2: LightweightNode) -> bool:
+        """Checks if a connection between node1 and node2 already exists in self._connections.
+           Returns True if NO connection exists (i.e., it's okay to add one), False otherwise.
+        """
+        for conn in self.connections:
+            if (conn.node1 is node1 and conn.node2 is node2) or \
+                    (conn.node1 is node2 and conn.node2 is node1):
                 return False
         return True
 
-    def _calculate_force(self, node):
-        dx, dy, alfa = self._calculate_angle(node, QPointF(self.graph_view.width() / 2, self.graph_view.height() / 2))
-        dsq = math.sqrt(dx * dx + dy * dy)
-        force = (dsq * math.sqrt(dsq + self.SOFTENING_CONSTANT)) / self.G
+    def _calculate_force_to_center(self, node: LightweightNode) -> QPointF:
+        """Calculates a gravitational-like force pulling the node towards the center of the view."""
+        # Calculate vector from node to view center
+        view_center = QPointF(self.graph_view.width() / 2, self.graph_view.height() / 2)
+        dx, dy, angle = self._calculate_vector_and_angle(node.pos(),
+                                                         view_center)  # Use node.pos() for its current position
 
-        force_x = float(force) * math.cos(alfa)
-        force_y = float(force) * math.sin(alfa)
+        distance_sq = dx * dx + dy * dy
+        if distance_sq == 0:
+            return QPointF(0, 0)
+        distance = math.sqrt(distance_sq)
 
-        return QPointF(force_x * abs(dx), force_y * abs(dy))
+        # Force magnitude (custom law from original code)
+        # Note: dsq in original was distance, not distance_sq. Renaming for clarity.
+        force_magnitude = (distance * math.sqrt(distance + self.SOFTENING_CONSTANT)) / self.G
+        if math.isnan(force_magnitude): force_magnitude = 0  # Avoid NaN issues if distance is very small
 
-    def _calculate_angle(self, p1, p2):
+        # Force components
+        # Original code had abs(dx) and abs(dy) which seems unusual for directional force.
+        # A standard force vector would be: Fx = magnitude * cos(angle), Fy = magnitude * sin(angle)
+        # Or: Fx = magnitude * (dx / distance), Fy = magnitude * (dy / distance)
+        # Preserving original scaled by normalized vector components:
+        force_x = force_magnitude * (dx / distance if distance != 0 else 0)
+        force_y = force_magnitude * (dy / distance if distance != 0 else 0)
+
+        return QPointF(force_x, force_y)
+
+    def _calculate_vector_and_angle(self, p1: QPointF, p2: QPointF) -> (float, float, float):
+        """Calculates dx, dy, and angle from p1 to p2."""
         dy = p2.y() - p1.y()
         dx = p2.x() - p1.x()
         angle = math.atan2(dy, dx)
 
         return dx, dy, angle
+

@@ -7,9 +7,9 @@ from views.items.node import LightweightNode
 
 
 class GraphPresenter(QObject):
-    def __init__(self, first_view, model):
+    def __init__(self, view, model):
         super().__init__()
-        self.graph_view = first_view
+        self.graph_view = view
         self.graph_model = model
 
         self.graph_model.update_scene_items.connect(self.update_items)

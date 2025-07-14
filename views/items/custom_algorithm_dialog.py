@@ -1,8 +1,10 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog
 
 from views.items.code_editor import PythonEditor
 
-class CustomAlgorithmDialog(QtWidgets.QDialog):
+class CustomAlgorithmDialog(QDialog):
     def __init__(self, text=None):
         super().__init__()
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
@@ -188,7 +190,7 @@ class CustomAlgorithmDialog(QtWidgets.QDialog):
         return self.code_edit.text()
 
     def mouse_press_event(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == Qt.LeftButton:
             self.old_pos = event.globalPos()
 
     def mouse_move_event(self, event):

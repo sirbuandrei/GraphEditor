@@ -67,6 +67,9 @@ class GraphView(QGraphicsView):
         self._edges.append(edge)
         self.scene.addItem(edge)
 
+        edge.get_start_node().add_edge(edge)
+        edge.get_end_node().add_edge(edge)
+
     def remove_node(self, node):
         self._physics_engine.update_connections()
         self._nodes.remove(node)
