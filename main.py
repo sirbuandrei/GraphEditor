@@ -24,8 +24,6 @@ from presenters.coordinator import Coordinator
 from views.splash_screen import SplashScreen
 
 
-#TODO: splash screen
-
 def load_config(filepath='config.yaml'):
     req_keys = ['DATABASE', 'KEY_PATH', 'API_KEY']
 

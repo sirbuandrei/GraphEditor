@@ -6,7 +6,6 @@ from numpy import integer
 
 from utils.styles import Styles
 
-#TODO: simplify
 
 class MainWindow(QMainWindow):
     MINIMUM_WIDTH: int = 900
